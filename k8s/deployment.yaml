@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nostr-relay
+  name: nostr-relay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nostr-relay
+  template:
+    metadata:
+      labels:
+        app: nostr-relay
+    spec:
+      imagePullSecrets:
+      - name: ${secret}
+      initContainers:
+      - image: litestream/litestream
+        name: litestream-init
+        command: ["/bin/sh", '-c']
+        args:
+        - |
+          /usr/local/bin/litestream restore -config /opt/litestream/litestream.yaml /data/nostr-relay.sqlite && chmod 777 /data/nostr-relay.sqlite || true
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: litestream-secret
+          mountPath: /opt/litestream/litestream.yaml
+          subPath: litestream.yaml
+      containers:
+      - image: ${docker_server}/${registry_path}/nostr-relay:${tag}
+        name: nostr-relay
+        imagePullPolicy: Always
+        env:
+        - name: DATABASE_URL
+          value: /data/nostr-relay.sqlite
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        ports:
+        - containerPort: 7447
+      - image: litestream/litestream
+        name: litestream
+        command: ["/bin/sh", '-c']
+        args:
+        - |
+          /usr/local/bin/litestream replicate -config /opt/litestream/litestream.yaml
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: litestream-secret
+          mountPath: /opt/litestream/litestream.yaml
+          subPath: litestream.yaml
+      volumes:
+      - name: litestream-secret
+        secret:
+          secretName: litestream
+          items:
+          - key: litestream.yaml
+            path: litestream.yaml
+      - name: data
+        emptyDir: {}

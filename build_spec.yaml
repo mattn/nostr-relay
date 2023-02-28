@@ -1,0 +1,36 @@
+version: 0.1
+component: build
+timeoutInSeconds: 6000
+shell: bash
+env:
+  variables:
+    docker_server: registry.hub.docker.com
+    registry_path: mattn
+    secret: docker-secret
+    app_name: nostr-relay
+    app_version: 0.0.2
+  exportedVariables:
+    - tag
+
+steps:
+  - type: Command
+    timeoutInSeconds: 400
+    name: "Dockerizer"
+    command: |
+      docker build -t ${app_name}:${app_version} .
+      docker tag ${app_name}:${app_version} ${docker_server}/${registry_path}
+      docker tag ${app_name}:${app_version} nostr-relay
+      tag=${app_version}
+    onFailure:
+      - type: Command
+        command: |
+          echo "Failure successfully handled"
+        timeoutInSeconds: 60
+
+outputArtifacts:
+  - name: nostr-relay
+    type: DOCKER_IMAGE
+    location: nostr-relay
+  - name: nostr-relay-kube-manifest
+    type: BINARY
+    location: k8s/deploy.yaml
