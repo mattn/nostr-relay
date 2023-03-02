@@ -11,6 +11,12 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
+const name = "nostr-relay"
+
+const version = "0.0.1"
+
+var revision = "HEAD"
+
 type Relay struct {
 	storage *sqlite3.SQLite3Backend
 }
