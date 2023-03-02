@@ -8,7 +8,7 @@ env:
     registry_path: mattn
     secret: docker-secret
     app_name: nostr-relay
-    app_version: 0.0.2
+    app_version: 0.0.1
   exportedVariables:
     - tag
 
