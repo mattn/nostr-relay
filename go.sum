@@ -11,6 +11,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/fiatjaf/relayer v1.7.2-0.20230226175808-b50dad2700fd h1:UHo1EQiFZ49gxQbrW+XQzsysOkUK2Z4bzuuEuLJJhcQ=
 github.com/fiatjaf/relayer v1.7.2-0.20230226175808-b50dad2700fd/go.mod h1:cQGM8YSoU/7I79Mg9ULlLQWYm/U54/B/4k60fRXEY2o=
+github.com/fiatjaf/relayer v1.7.2 h1:MlFVIH9faOqsHpsWhjMMJc7yxgvh6FFL18kQGhqUdDw=
+github.com/fiatjaf/relayer v1.7.2/go.mod h1:cQGM8YSoU/7I79Mg9ULlLQWYm/U54/B/4k60fRXEY2o=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
