@@ -1,3 +1,8 @@
 nostr-relay
 nostr-relay.sqlite
 litestream.yaml
+.nostr-relay.sqlite-litestream
+kustomize/
+nostr-relay.sqlite-shm
+nostr-relay.sqlite-wal
+scripts/
