@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  nostr-relay:
+    build: .
+    depends_on:
+      litestream-backup:
+        condition: service_healthy
+    restart: always
+    ports:
+      - "7447:7447"
+    volumes_from:
+      - litestream-restore:rw
+  litestream-backup:
+    image: litestream/litestream
+    volumes_from:
+      - litestream-restore:rw
+    entrypoint: ["/bin/sh", "-c"]
+    depends_on:
+      litestream-restore:
+        condition: service_completed_successfully
+    healthcheck:
+      test: /usr/local/bin/litestream restore -if-db-not-exists -if-replica-exists -config /opt/litestream/litestream.yaml /data/nostr-relay.sqlite
+      timeout: 10m
+      retries: 1
+    command:
+      - /usr/local/bin/litestream replicate -config /opt/litestream/litestream.yaml
+  litestream-restore:
+    image: litestream/litestream
+    volumes:
+      - .:/data
+      - .:/opt/litestream
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - /usr/local/bin/litestream restore -if-db-not-exists -if-replica-exists -config /opt/litestream/litestream.yaml /data/nostr-relay.sqlite && chmod 777 /data/nostr-relay.sqlite || true
