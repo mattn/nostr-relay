@@ -9,6 +9,7 @@ import (
 	"github.com/fiatjaf/relayer/storage/sqlite3"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
+	"github.com/nbd-wtf/go-nostr/nip11"
 )
 
 const name = "nostr-relay"
@@ -35,6 +36,20 @@ func (r *Relay) AcceptEvent(evt *nostr.Event) bool { return true }
 func (r *Relay) BeforeSave(evt *nostr.Event)       {}
 func (r *Relay) AfterSave(evt *nostr.Event) {
 	json.NewEncoder(os.Stderr).Encode(evt)
+}
+func (r *Relay) ServiceURL() string {
+	return "https://nostr.compile-error.net"
+}
+func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
+	return nip11.RelayInformationDocument{
+		Name:          "nostr-relay",
+		Description:   "relay powered by the relayer framework",
+		PubKey:        "npub1937vv2nf06360qn9y8el6d8sevnndy7tuh5nzre4gj05xc32tnwqauhaj6",
+		Contact:       "mattn.jp@gmail.com",
+		SupportedNIPs: []int{9, 11, 12, 15, 16, 20, 49},
+		Software:      "https://github.com/mattn/nostr-relay",
+		Version:       version,
+	}
 }
 
 func main() {
