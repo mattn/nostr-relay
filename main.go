@@ -1,8 +1,9 @@
 package main
 
 import (
-	_ "embed"
+	"embed"
 	"encoding/json"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -21,11 +22,8 @@ const version = "0.0.7"
 var revision = "HEAD"
 
 var (
-	//go:embed static/index.html
-	indexPage []byte
-
-	//go:embed static/favicon.ico
-	favicon []byte
+	//go:embed static
+	assets embed.FS
 )
 
 type Relay struct {
@@ -41,7 +39,8 @@ func (r *Relay) Storage() relayer.Storage {
 }
 
 func (r *Relay) OnInitialized(s *relayer.Server) {
-	s.Router().PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
+	sub, _ := fs.Sub(assets, "static")
+	s.Router().PathPrefix("/").Handler(http.FileServer(http.FS(sub)))
 }
 
 func (r *Relay) Init() error                       { return nil }
