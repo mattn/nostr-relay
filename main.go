@@ -1,8 +1,10 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/fiatjaf/relayer"
@@ -18,6 +20,14 @@ const version = "0.0.4"
 
 var revision = "HEAD"
 
+var (
+	//go:embed static/index.html
+	indexPage []byte
+
+	//go:embed static/favicon.ico
+	favicon []byte
+)
+
 type Relay struct {
 	storage *sqlite3.SQLite3Backend
 }
@@ -30,7 +40,10 @@ func (r *Relay) Storage() relayer.Storage {
 	return r.storage
 }
 
-func (r *Relay) OnInitialized(*relayer.Server)     {}
+func (r *Relay) OnInitialized(s *relayer.Server) {
+	s.Router().Handle("/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+}
+
 func (r *Relay) Init() error                       { return nil }
 func (r *Relay) AcceptEvent(evt *nostr.Event) bool { return true }
 func (r *Relay) BeforeSave(evt *nostr.Event)       {}
