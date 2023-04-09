@@ -41,7 +41,7 @@ func (r *Relay) Storage() relayer.Storage {
 }
 
 func (r *Relay) OnInitialized(s *relayer.Server) {
-	s.Router().Handle("/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	s.Router().Handle("/", http.FileServer(http.Dir("static")))
 }
 
 func (r *Relay) Init() error                       { return nil }
