@@ -49,9 +49,6 @@ func (r *Relay) BeforeSave(evt *nostr.Event)       {}
 func (r *Relay) AfterSave(evt *nostr.Event) {
 	json.NewEncoder(os.Stderr).Encode(evt)
 }
-func (r *Relay) ServiceURL() string {
-	return "https://nostr.compile-error.net"
-}
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 	return nip11.RelayInformationDocument{
 		Name:          "nostr-relay",
@@ -62,6 +59,16 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Software:      "https://github.com/mattn/nostr-relay",
 		Version:       version,
 	}
+}
+
+func (r *Relay) Infof(format string, v ...any) {
+	log.Printf("[INFO] "+format, v...)
+}
+func (r *Relay) Warningf(format string, v ...any) {
+	log.Printf("[WARN] "+format, v...)
+}
+func (r *Relay) Errorf(format string, v ...any) {
+	log.Printf("[ERROR] "+format, v...)
 }
 
 func main() {
