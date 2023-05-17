@@ -44,6 +44,11 @@ func (r *Relay) Init() error {
 }
 
 func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
+	// reject events that have timestamps greater than 30 minutes in the future.
+	if evt.CreatedAt > nostr.Now()+30*60 {
+		return false
+	}
+
 	return true
 }
 
