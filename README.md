@@ -32,10 +32,22 @@ nostr relay with backup method using litestream.
     $ kubectl create secret generic litestream --from-file=litestream.yaml
     ```
 
-2. Deploy with kustomize
+3. Deploy with kustomize
 
     ```
     $ kubectl apply -k kustomize
+    ```
+
+4. Override NIP-11 information
+
+    ```
+    env:
+    - name: DATABASE_URL
+      value: /data/nostr-relay.sqlite
+    - name: NOSTR_RELAY_CONTACT
+      value: admin@example.com
+    - name: NOSTR_RELAY_PUBKEY
+      value: npub1xxxxx
     ```
 
 ## License
