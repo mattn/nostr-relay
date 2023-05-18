@@ -48,7 +48,6 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	if evt.CreatedAt > nostr.Now()+30*60 {
 		return false
 	}
-
 	return true
 }
 
@@ -58,16 +57,29 @@ func (r *Relay) BeforeSave(evt *nostr.Event) {
 func (r *Relay) AfterSave(evt *nostr.Event) {
 	json.NewEncoder(os.Stderr).Encode(evt)
 }
+
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 	return nip11.RelayInformationDocument{
-		Name:           "nostr-relay",
-		Description:    "relay powered by the relayer framework",
-		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
-		Contact:        "mattn.jp@gmail.com",
-		SupportedNIPs:  []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42},
-		Software:       "https://github.com/mattn/nostr-relay",
-		Version:        version,
-		Limitation:     &nip11.RelayLimitationDocument{MaxMessageLength: 524288, MaxSubscriptions: 10, MaxFilters: 2500, MaxLimit: 5000, MaxSubidLength: 256, MinPrefix: 4, MaxEventTags: 2500, MaxContentLength: 65536, MinPowDifficulty: 0, AuthRequired: false, PaymentRequired: false},
+		Name:          "nostr-relay",
+		Description:   "relay powered by the relayer framework",
+		PubKey:        "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
+		Contact:       "mattn.jp@gmail.com",
+		SupportedNIPs: []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42},
+		Software:      "https://github.com/mattn/nostr-relay",
+		Version:       version,
+		Limitation: &nip11.RelayLimitationDocument{
+			MaxMessageLength: 524288,
+			MaxSubscriptions: 10,
+			MaxFilters:       2500,
+			MaxLimit:         5000,
+			MaxSubidLength:   256,
+			MinPrefix:        4,
+			MaxEventTags:     2500,
+			MaxContentLength: 65536,
+			MinPowDifficulty: 0,
+			AuthRequired:     false,
+			PaymentRequired:  false,
+		},
 		RelayCountries: []string{},
 		LanguageTags:   []string{},
 		Tags:           []string{},
