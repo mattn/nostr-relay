@@ -59,12 +59,12 @@ func (r *Relay) AfterSave(evt *nostr.Event) {
 }
 
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
-	return nip11.RelayInformationDocument{
+	info := nip11.RelayInformationDocument{
 		Name:          "nostr-relay",
 		Description:   "relay powered by the relayer framework",
 		PubKey:        "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
 		Contact:       "mattn.jp@gmail.com",
-		SupportedNIPs: []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42},
+		SupportedNIPs: []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42, 45},
 		Software:      "https://github.com/mattn/nostr-relay",
 		Version:       version,
 		Limitation: &nip11.RelayLimitationDocument{
@@ -92,6 +92,10 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 			}{},
 		},
 	}
+	if err := envconfig.Process("NOSTR_RELAY", &info); err != nil {
+		log.Fatalf("failed to read from env: %v", err)
+	}
+	return info
 }
 
 func (r *Relay) Infof(format string, v ...any) {
@@ -111,9 +115,6 @@ type Info struct {
 
 func main() {
 	r := Relay{}
-	if err := envconfig.Process("", &r); err != nil {
-		log.Fatalf("failed to read from env: %v", err)
-	}
 	r.storage = &sqlite3.SQLite3Backend{DatabaseURL: os.Getenv("DATABASE_URL")}
 	server, err := relayer.NewServer(&r)
 	if err != nil {
