@@ -1,6 +1,6 @@
 module github.com/mattn/nostr-relay
 
-go 1.18
+go 1.20
 
 require (
 	github.com/fiatjaf/relayer/v2 v2.0.0
