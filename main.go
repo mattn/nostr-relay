@@ -66,6 +66,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Contact:       "mattn.jp@gmail.com",
 		SupportedNIPs: []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42, 45, 50},
 		Software:      "https://github.com/mattn/nostr-relay",
+		Icon:          "https://mattn.github.io/assets/image/mattn-mohawk.webp",
 		Version:       version,
 		Limitation: &nip11.RelayLimitationDocument{
 			MaxMessageLength: 524288,
