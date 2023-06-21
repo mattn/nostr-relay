@@ -11,4 +11,4 @@ FROM scratch AS stage
 RUN mkdir /data
 ENV DATABASE_URL /data/nostr-relay.sqlite
 COPY --link --from=build-dev /go/bin/nostr-relay /go/bin/nostr-relay
-ENTRYPOINT ["/go/bin/nostr-relay"]
+CMD ["/go/bin/nostr-relay"]
