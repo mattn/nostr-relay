@@ -7,7 +7,7 @@ WORKDIR /go/src/app
 COPY --link go.mod go.sum ./
 COPY --link . .
 RUN CGO_ENABLED=1 go build -buildvcs=false -trimpath -ldflags '-w -s' -o /go/bin/nostr-relay
-FROM debian:bullseye-slim AS stage
+FROM scratch AS stage
 RUN mkdir /data
 ENV DATABASE_URL /data/nostr-relay.sqlite
 COPY --link --from=build-dev /go/bin/nostr-relay /go/bin/nostr-relay
