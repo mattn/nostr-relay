@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/fiatjaf/relayer/v2 v2.0.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nbd-wtf/go-nostr v0.18.11-0.20230620151348-b984a598cb62
+	github.com/nbd-wtf/go-nostr v0.19.1
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/sys v0.9.0 // indirect
 )
 

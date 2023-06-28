@@ -42,6 +42,8 @@ github.com/nbd-wtf/go-nostr v0.18.10 h1:9kD9U1QkAvqW4CH4CdKagY2wwyZoH80tO/voMZiS
 github.com/nbd-wtf/go-nostr v0.18.10/go.mod h1:F9y6+M8askJCjilLgMC3rD0moA6UtG1MCnyClNYXeys=
 github.com/nbd-wtf/go-nostr v0.18.11-0.20230620151348-b984a598cb62 h1:erUajRkj1C58eIDrcJAYCUjLO9L3W9gHl98TKXeQBxA=
 github.com/nbd-wtf/go-nostr v0.18.11-0.20230620151348-b984a598cb62/go.mod h1:F9y6+M8askJCjilLgMC3rD0moA6UtG1MCnyClNYXeys=
+github.com/nbd-wtf/go-nostr v0.19.1 h1:Nbw8QEmy54qe/FqIuSzcOSW2M6B5gC5+DK02QBsm/D4=
+github.com/nbd-wtf/go-nostr v0.19.1/go.mod h1:F9y6+M8askJCjilLgMC3rD0moA6UtG1MCnyClNYXeys=
 github.com/puzpuzpuz/xsync v1.5.2 h1:yRAP4wqSOZG+/4pxJ08fPTwrfL0IzE/LKQ/cw509qGY=
 github.com/puzpuzpuz/xsync v1.5.2/go.mod h1:K98BYhX3k1dQ2M63t1YNVDanbwUPmBCAhNmVrrxfiGg=
 github.com/rs/cors v1.9.0 h1:l9HGsTsHJcvW14Nk7J9KFz8bzeAWXn3CG6bgt7LsrAE=
@@ -57,6 +59,8 @@ golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc h1:mCRnTeVUjcrhlRmO0VK8a6k6R
 golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
 golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 h1:k/i9J1pBpvlfR+9QsetwPyERsqu1GIbi967PQMq3Ivc=
 golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
+golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df h1:UA2aFVmmsIlefxMk29Dp2juaUSth8Pyn3Tq5Y5mJGME=
+golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
 golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f h1:OfiFi4JbukWwe3lzw+xunroH1mnC1e2Gy5cxNJApiSY=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.8.0 h1:EBmGv8NaZBZTWvrbjNoL6HVt+IVy3QDQpJs7VRIw3tU=
