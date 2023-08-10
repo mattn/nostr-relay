@@ -48,6 +48,9 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	if evt.CreatedAt > nostr.Now()+30*60 {
 		return false
 	}
+	if evt.PubKey != "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc" {
+		return false
+	}
 	return true
 }
 
