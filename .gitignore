@@ -10,3 +10,5 @@ update.sh
 restore.sh
 *.json
 *.diff
+*.*-wal
+*.tmp
