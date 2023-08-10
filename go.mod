@@ -20,8 +20,8 @@ require (
 	github.com/fasthttp/websocket v1.5.4 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.2.1 // indirect
-	github.com/golang/glog v1.1.1 // indirect
+	github.com/gobwas/ws v1.3.0 // indirect
+	github.com/golang/glog v1.1.2 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
@@ -31,12 +31,12 @@ require (
 	github.com/puzpuzpuz/xsync v1.5.2 // indirect
 	github.com/rs/cors v1.9.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/tidwall/gjson v1.15.0 // indirect
+	github.com/tidwall/gjson v1.16.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.48.0 // indirect
-	golang.org/x/exp v0.0.0-20230807204917-050eac23e9de // indirect
+	golang.org/x/exp v0.0.0-20230810033253-352e893a4cad // indirect
 	golang.org/x/sys v0.11.0 // indirect
 )
 
