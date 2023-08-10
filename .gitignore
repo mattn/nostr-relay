@@ -8,6 +8,7 @@ nostr-relay.sqlite-wal
 scripts/
 update.sh
 restore.sh
+del.sh
 *.json
 *.diff
 *.*-wal
