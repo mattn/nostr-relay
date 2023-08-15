@@ -120,7 +120,7 @@ type Info struct {
 func main() {
 	r := Relay{}
 	r.storage = &sqlite3.SQLite3Backend{DatabaseURL: os.Getenv("DATABASE_URL")}
-	server, err := relayer.NewServer(&r)
+	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
