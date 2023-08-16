@@ -41,6 +41,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
+	s.Log.Warningf("loop000")
 	ctx := r.Context()
 	store := s.relay.Storage(ctx)
 	advancedDeleter, _ := store.(AdvancedDeleter)
@@ -50,6 +51,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		s.Log.Errorf("failed to upgrade websocket: %v", err)
 		return
 	}
+	s.Log.Warningf("loop001")
 	s.clientsMu.Lock()
 	defer s.clientsMu.Unlock()
 	s.clients[conn] = struct{}{}
@@ -59,6 +61,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	challenge := make([]byte, 8)
 	rand.Read(challenge)
 
+	s.Log.Warningf("loop002")
 	ws := &WebSocket{
 		conn:      conn,
 		challenge: hex.EncodeToString(challenge),
@@ -73,6 +76,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	// reader
 	go func() {
+		s.Log.Warningf("loop0")
 		defer func() {
 			ticker.Stop()
 			s.clientsMu.Lock()
@@ -97,8 +101,10 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for {
+			s.Log.Warningf("loop1")
 			typ, message, err := conn.ReadMessage()
 			if err != nil {
+				s.Log.Warningf("loop2")
 				if websocket.IsUnexpectedCloseError(
 					err,
 					websocket.CloseGoingAway,        // 1001
@@ -110,6 +116,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
+			s.Log.Warningf("loop3")
 			if ws.limiter != nil {
 				// NOTE: Wait will throttle the requests.
 				// To reject requests exceeding the limit, use if !ws.limiter.Allow()
@@ -119,13 +126,15 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			s.Log.Warningf("loop4")
 			if typ == websocket.PingMessage {
+				s.Log.Warningf("loop5")
 				ws.WriteMessage(websocket.PongMessage, nil)
 				continue
 			}
 
+			s.Log.Warningf("loop6")
 			go func(message []byte) {
-				s.Log.Warningf("loop")
 				ctx = context.Background()
 				var notice string
 				defer func() {
