@@ -135,7 +135,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 			s.Log.Warningf("loop6")
 			go func(message []byte) {
-				ctx, cancel := context.WithCancel(context.Background())
+				ctx, cancel = context.WithCancel(context.Background())
 				defer cancel()
 
 				var notice string
@@ -362,7 +362,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 						}
 						if pubkey, ok := nip42.ValidateAuthEvent(&evt, ws.challenge, auther.ServiceURL()); ok {
 							ws.authed = pubkey
-							ctx := context.WithValue(ctx, AUTH_CONTEXT_KEY, pubkey)
+							ctx = context.WithValue(ctx, AUTH_CONTEXT_KEY, pubkey)
 							ws.WriteJSON(nostr.OKEnvelope{EventID: evt.ID, OK: true})
 						} else {
 							reason := "error: failed to authenticate"
