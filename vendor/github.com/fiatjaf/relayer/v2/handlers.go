@@ -386,7 +386,10 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 		for {
 			select {
-			case <-ticker.C:
+			case _, ok := <-ticker.C:
+				if !ok {
+					return
+				}
 				err := ws.WriteMessage(websocket.PingMessage, nil)
 				if err != nil {
 					s.Log.Errorf("error writing ping: %v; closing websocket", err)
