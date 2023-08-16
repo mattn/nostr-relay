@@ -135,6 +135,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 			s.Log.Warningf("loop6")
 			go func(message []byte) {
+				var cancel context.CancelFunc
 				ctx, cancel = context.WithCancel(context.Background())
 				defer cancel()
 
