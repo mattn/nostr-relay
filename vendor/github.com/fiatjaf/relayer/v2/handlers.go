@@ -138,6 +138,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 				ctx = context.Background()
 				var notice string
 				defer func() {
+					s.Log.Warningf("loop661")
 					if notice != "" {
 						ws.WriteJSON(nostr.NoticeEnvelope(notice))
 					}
@@ -380,6 +381,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	// writer
 	go func() {
 		defer func() {
+			s.Log.Warningf("loop7")
 			ticker.Stop()
 			conn.Close()
 		}()
@@ -388,6 +390,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 			select {
 			case _, ok := <-ticker.C:
 				if !ok {
+					s.Log.Warningf("loop8")
 					return
 				}
 				err := ws.WriteMessage(websocket.PingMessage, nil)
