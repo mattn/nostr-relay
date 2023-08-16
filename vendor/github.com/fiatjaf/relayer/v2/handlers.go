@@ -389,12 +389,15 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		for {
 			select {
 			case _, ok := <-ticker.C:
+				s.Log.Warningf("loop8")
 				if !ok {
-					s.Log.Warningf("loop8")
+					s.Log.Warningf("loop9")
 					return
 				}
+				s.Log.Warningf("loop10")
 				conn.SetWriteDeadline(time.Now().Add(writeWait))
 				err := ws.WriteMessage(websocket.PingMessage, nil)
+				s.Log.Warningf("loop11", err)
 				if err != nil {
 					s.Log.Errorf("error writing ping: %v; closing websocket", err)
 					return
