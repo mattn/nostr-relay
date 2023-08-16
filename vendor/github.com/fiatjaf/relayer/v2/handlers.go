@@ -393,6 +393,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 					s.Log.Warningf("loop8")
 					return
 				}
+				conn.SetWriteDeadline(time.Now().Add(writeWait))
 				err := ws.WriteMessage(websocket.PingMessage, nil)
 				if err != nil {
 					s.Log.Errorf("error writing ping: %v; closing websocket", err)
