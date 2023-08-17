@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/fiatjaf/relayer/v2/storage/sqlite3"
@@ -29,6 +30,9 @@ var (
 
 type Relay struct {
 	storage *sqlite3.SQLite3Backend
+
+	mu        sync.Mutex
+	blocklist []string
 }
 
 func (r *Relay) Name() string {
@@ -48,8 +52,12 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	if evt.CreatedAt > nostr.Now()+30*60 {
 		return false
 	}
-	if evt.PubKey != "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc" {
-		return false
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, b := range r.blocklist {
+		if evt.PubKey == b {
+			return false
+		}
 	}
 	return true
 }
@@ -117,6 +125,37 @@ type Info struct {
 	Count   int64  `json:"count"`
 }
 
+func (r *Relay) ready() {
+	_, err := r.storage.DB.Exec(`
+CREATE TABLE IF NOT EXISTS blocklist (
+  pubkey text NOT NULL
+);
+    `)
+	if err != nil {
+		log.Fatalf("failed to create server: %v", err)
+	}
+	r.reload()
+}
+
+func (r *Relay) reload() {
+	rows, err := r.storage.DB.Query(`
+SELECT pubkey FROM blocklist
+);
+    `)
+	if err != nil {
+		log.Fatalf("failed to create server: %v", err)
+	}
+	r.blocklist = []string{}
+	for rows.Next() {
+		var pubkey string
+		err := rows.Scan(&pubkey)
+		if err != nil {
+			return
+		}
+		r.blocklist = append(r.blocklist, pubkey)
+	}
+}
+
 func main() {
 	r := Relay{}
 	r.storage = &sqlite3.SQLite3Backend{DatabaseURL: os.Getenv("DATABASE_URL")}
@@ -124,6 +163,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
+
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Add("content-type", "application/json")
@@ -134,6 +174,9 @@ func main() {
 			log.Println(err)
 		}
 		json.NewEncoder(w).Encode(info)
+	})
+	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
+		r.reload()
 	})
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 	if err := server.Start("0.0.0.0", 7447); err != nil {
