@@ -143,8 +143,13 @@ SELECT pubkey FROM blocklist
 );
     `)
 	if err != nil {
-		log.Fatalf("failed to create server: %v", err)
+		log.Printf("failed to create server: %v", err)
+		return
 	}
+	defer rows.Close()
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.blocklist = []string{}
 	for rows.Next() {
 		var pubkey string
