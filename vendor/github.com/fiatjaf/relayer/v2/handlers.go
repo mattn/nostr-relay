@@ -54,6 +54,8 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	defer s.clientsMu.Unlock()
 	s.clients[conn] = struct{}{}
 	ticker := time.NewTicker(pingPeriod)
+	stop := make(chan struct{})
+	defer close(stop)
 
 	// NIP-42 challenge
 	challenge := make([]byte, 8)
@@ -75,6 +77,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		defer func() {
 			ticker.Stop()
+			stop <- struct{}{}
 			s.clientsMu.Lock()
 			if _, ok := s.clients[conn]; ok {
 				conn.Close()
@@ -377,16 +380,15 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 		for {
 			select {
-			case _, ok := <-ticker.C:
-				if !ok {
-					return
-				}
+			case <-ticker.C:
 				conn.SetWriteDeadline(time.Now().Add(writeWait))
 				err := ws.WriteMessage(websocket.PingMessage, nil)
 				if err != nil {
 					s.Log.Errorf("error writing ping: %v; closing websocket", err)
 					return
 				}
+			case <-stop:
+				return
 			}
 		}
 	}()
