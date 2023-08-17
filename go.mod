@@ -38,7 +38,7 @@ require (
 	github.com/valyala/fasthttp v1.48.0 // indirect
 	golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb // indirect
 	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
+	golang.org/x/time v0.3.0 // indirect
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../relayer/
