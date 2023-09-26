@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/fiatjaf/relayer/v2 v2.1.1-0.20230813002430-1935f62c29c0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nbd-wtf/go-nostr v0.22.0
+	github.com/nbd-wtf/go-nostr v0.22.1
 )
 
 require (
@@ -24,7 +24,7 @@ require (
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -32,7 +32,7 @@ require (
 	github.com/puzpuzpuz/xsync/v2 v2.5.0 // indirect
 	github.com/rs/cors v1.10.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/tidwall/gjson v1.16.0 // indirect
+	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
