@@ -77,23 +77,17 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	// reader
 	go func() {
 		defer func() {
-			s.Log.Infof("disconnected1 from %s", conn.RemoteAddr().String())
 			ticker.Stop()
-			s.Log.Infof("disconnected2 from %s", conn.RemoteAddr().String())
 			stop <- struct{}{}
-			s.Log.Infof("disconnected3 from %s", conn.RemoteAddr().String())
 			close(stop)
-			s.Log.Infof("disconnected4 from %s", conn.RemoteAddr().String())
 			s.clientsMu.Lock()
-			s.Log.Infof("disconnected5 from %s", conn.RemoteAddr().String())
 			if _, ok := s.clients[conn]; ok {
 				conn.Close()
 				delete(s.clients, conn)
 				removeListener(ws)
 			}
-			s.Log.Infof("disconnected6 from %s", conn.RemoteAddr().String())
 			s.clientsMu.Unlock()
-			s.Log.Infof("disconnected7 from %s", conn.RemoteAddr().String())
+			s.Log.Infof("disconnected from %s", conn.RemoteAddr().String())
 		}()
 
 		conn.SetReadLimit(maxMessageSize)
