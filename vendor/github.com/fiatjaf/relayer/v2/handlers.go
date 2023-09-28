@@ -54,7 +54,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	defer s.clientsMu.Unlock()
 	s.clients[conn] = struct{}{}
 	ticker := time.NewTicker(pingPeriod)
-	stop := make(chan struct{}, 2)
+	stop := make(chan struct{})
 
 	s.Log.Infof("connected from %s", conn.RemoteAddr().String())
 
@@ -385,6 +385,8 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			ticker.Stop()
 			conn.Close()
+			for := range stop {
+			}
 		}()
 
 		for {
