@@ -352,10 +352,8 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 		conn.SetReadLimit(maxMessageSize)
 		conn.SetReadDeadline(time.Now().Add(pongWait))
-		conn.SetWriteDeadline(time.Now().Add(writeWait))
 		conn.SetPongHandler(func(string) error {
 			conn.SetReadDeadline(time.Now().Add(pongWait))
-			conn.SetWriteDeadline(time.Now().Add(writeWait))
 			return nil
 		})
 
