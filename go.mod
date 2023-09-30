@@ -28,7 +28,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/puzpuzpuz/xsync v1.5.2 // indirect
 	github.com/puzpuzpuz/xsync/v2 v2.5.0 // indirect
 	github.com/rs/cors v1.10.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
