@@ -174,7 +174,7 @@ func (s *Server) doReq(ctx context.Context, ws *WebSocket, request []json.RawMes
 
 	filters := make(nostr.Filters, len(request)-2)
 	for i, filterReq := range request[2:] {
-		s.Log.Infof("REQ filter %s", string(filterReq))
+		s.Log.Infof("REQ filter%03d %s", i, string(filterReq))
 		if err := json.Unmarshal(
 			filterReq,
 			&filters[i],
