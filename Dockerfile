@@ -8,7 +8,8 @@ RUN apk --update add --no-cache upx gcc musl-dev || \
     go mod download
 COPY --link . .
 RUN mkdir /data
-RUN CGO_ENABLED=1 go install -buildvcs=false -trimpath -ldflags '-w -s -extldflags "-static"'
+ENV GOCACHE=/root/.cache/go-build
+RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=1 go install -buildvcs=false -trimpath -ldflags '-w -s -extldflags "-static"'
 RUN [ -e /usr/bin/upx ] && upx /go/bin/bsky-haikubot || echo
 FROM scratch
 COPY --from=build-dev /data /data
