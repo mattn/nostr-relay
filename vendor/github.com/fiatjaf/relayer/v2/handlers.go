@@ -293,6 +293,7 @@ func (s *Server) handleMessage(ctx context.Context, ws *WebSocket, message []byt
 	case "COUNT":
 		notice = s.doCount(ctx, ws, request, store)
 	case "REQ":
+		s.Log.Infof("REQ %#v", request)
 		notice = s.doReq(ctx, ws, request, store)
 	case "CLOSE":
 		notice = s.doClose(ctx, ws, request, store)
