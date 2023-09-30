@@ -35,7 +35,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: DATABASE_URL
-          value: /data/nostr-relay.sqlite
+          value: /data/nostr-relay.sqlite?_journal_mode=WAL
         volumeMounts:
         - name: data
           mountPath: /data
