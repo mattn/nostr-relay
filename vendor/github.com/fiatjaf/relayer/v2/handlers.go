@@ -286,6 +286,7 @@ func (s *Server) handleMessage(ctx context.Context, ws *WebSocket, message []byt
 	var typ string
 	json.Unmarshal(request[0], &typ)
 
+	s.Log.Infof("message %q from %s", typ, ws.conn.RemoteAddr().String())
 	switch typ {
 	case "EVENT":
 		notice = s.doEvent(ctx, ws, request, store)
