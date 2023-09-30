@@ -264,6 +264,48 @@ func (s *Server) doAuth(ctx context.Context, ws *WebSocket, request []json.RawMe
 	return ""
 }
 
+func (s *Server) handleMessage(ctx context.Context, ws *WebSocket, message []byte, store Storage) {
+	var notice string
+	defer func() {
+		if notice != "" {
+			ws.WriteJSON(nostr.NoticeEnvelope(notice))
+		}
+	}()
+
+	var request []json.RawMessage
+	if err := json.Unmarshal(message, &request); err != nil {
+		// stop silently
+		return
+	}
+
+	if len(request) < 2 {
+		notice = "request has less than 2 parameters"
+		return
+	}
+
+	var typ string
+	json.Unmarshal(request[0], &typ)
+
+	switch typ {
+	case "EVENT":
+		notice = s.doEvent(ctx, ws, request, store)
+	case "COUNT":
+		notice = s.doCount(ctx, ws, request, store)
+	case "REQ":
+		notice = s.doReq(ctx, ws, request, store)
+	case "CLOSE":
+		notice = s.doClose(ctx, ws, request, store)
+	case "AUTH":
+		notice = s.doAuth(ctx, ws, request, store)
+	default:
+		if cwh, ok := s.relay.(CustomWebSocketHandler); ok {
+			cwh.HandleUnknownType(ws, typ, request)
+		} else {
+			notice = "unknown message type " + typ
+		}
+	}
+}
+
 func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	store := s.relay.Storage(ctx)
@@ -304,12 +346,16 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 			}
 			s.clientsMu.Unlock()
 			s.Log.Infof("disconnected from %s", conn.RemoteAddr().String())
+
+			ctx.Done()
 		}()
 
 		conn.SetReadLimit(maxMessageSize)
 		conn.SetReadDeadline(time.Now().Add(pongWait))
+		conn.SetWriteDeadline(time.Now().Add(writeWait))
 		conn.SetPongHandler(func(string) error {
 			conn.SetReadDeadline(time.Now().Add(pongWait))
+			conn.SetWriteDeadline(time.Now().Add(writeWait))
 			return nil
 		})
 
@@ -346,49 +392,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			go func(message []byte) {
-				ctx = context.TODO()
-
-				var notice string
-				defer func() {
-					if notice != "" {
-						ws.WriteJSON(nostr.NoticeEnvelope(notice))
-					}
-				}()
-
-				var request []json.RawMessage
-				if err := json.Unmarshal(message, &request); err != nil {
-					// stop silently
-					return
-				}
-
-				if len(request) < 2 {
-					notice = "request has less than 2 parameters"
-					return
-				}
-
-				var typ string
-				json.Unmarshal(request[0], &typ)
-
-				switch typ {
-				case "EVENT":
-					notice = s.doEvent(ctx, ws, request, store)
-				case "COUNT":
-					notice = s.doCount(ctx, ws, request, store)
-				case "REQ":
-					notice = s.doReq(ctx, ws, request, store)
-				case "CLOSE":
-					notice = s.doClose(ctx, ws, request, store)
-				case "AUTH":
-					notice = s.doAuth(ctx, ws, request, store)
-				default:
-					if cwh, ok := s.relay.(CustomWebSocketHandler); ok {
-						cwh.HandleUnknownType(ws, typ, request)
-					} else {
-						notice = "unknown message type " + typ
-					}
-				}
-			}(message)
+			go s.handleMessage(ctx, ws, message, store)
 		}
 	}()
 
