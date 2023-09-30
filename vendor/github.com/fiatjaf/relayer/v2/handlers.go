@@ -386,7 +386,7 @@ func (s *Server) HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if typ == websocket.PingMessage {
-				ws.WriteMessage(websocket.PongMessage, nil)
+				conn.WriteControl(websocket.PongMessage, nil, time.Now().Add(writeWait))
 				continue
 			}
 
