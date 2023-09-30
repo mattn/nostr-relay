@@ -173,6 +173,7 @@ func (s *Server) doReq(ctx context.Context, ws *WebSocket, request []json.RawMes
 	}
 
 	filters := make(nostr.Filters, len(request)-2)
+	s.Log.Infof("REQ %#v", filters)
 	for i, filterReq := range request[2:] {
 		if err := json.Unmarshal(
 			filterReq,
@@ -293,7 +294,6 @@ func (s *Server) handleMessage(ctx context.Context, ws *WebSocket, message []byt
 	case "COUNT":
 		notice = s.doCount(ctx, ws, request, store)
 	case "REQ":
-		s.Log.Infof("REQ %#v", request)
 		notice = s.doReq(ctx, ws, request, store)
 	case "CLOSE":
 		notice = s.doClose(ctx, ws, request, store)
