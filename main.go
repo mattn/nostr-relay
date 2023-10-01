@@ -32,6 +32,7 @@ type Relay struct {
 	storage *sqlite3.SQLite3Backend
 
 	mu        sync.Mutex
+	allowlist []string
 	blocklist []string
 }
 
@@ -57,6 +58,13 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	for _, b := range r.blocklist {
 		if evt.PubKey == b {
 			return false
+		}
+	}
+	if len(r.allowlist) > 0 {
+		for _, a := range r.allowlist {
+			if evt.PubKey != a {
+				return false
+			}
 		}
 	}
 	return true
@@ -134,6 +142,14 @@ CREATE TABLE IF NOT EXISTS blocklist (
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
+	_, err = r.storage.DB.Exec(`
+CREATE TABLE IF NOT EXISTS allowlist (
+  pubkey text NOT NULL
+);
+    `)
+	if err != nil {
+		log.Fatalf("failed to create server: %v", err)
+	}
 	r.reload()
 }
 
@@ -158,6 +174,28 @@ SELECT pubkey FROM blocklist
 			return
 		}
 		r.blocklist = append(r.blocklist, pubkey)
+	}
+
+	rows, err = r.storage.DB.Query(`
+SELECT pubkey FROM allowlist
+);
+    `)
+	if err != nil {
+		log.Printf("failed to create server: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.allowlist = []string{}
+	for rows.Next() {
+		var pubkey string
+		err := rows.Scan(&pubkey)
+		if err != nil {
+			return
+		}
+		r.allowlist = append(r.allowlist, pubkey)
 	}
 }
 
