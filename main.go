@@ -70,7 +70,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	return true
 }
 
-func (r *Relay) BeforeSave(evt *nostr.Event) {
+func (r *Relay) BeforeSave(ctx context.Context, evt *nostr.Event) {
 }
 
 func (r *Relay) AfterSave(evt *nostr.Event) {
@@ -121,9 +121,11 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 func (r *Relay) Infof(format string, v ...any) {
 	log.Printf("[INFO] "+format, v...)
 }
+
 func (r *Relay) Warningf(format string, v ...any) {
 	log.Printf("[WARN] "+format, v...)
 }
+
 func (r *Relay) Errorf(format string, v ...any) {
 	log.Printf("[ERROR] "+format, v...)
 }
@@ -135,17 +137,17 @@ type Info struct {
 
 func (r *Relay) ready() {
 	_, err := r.storage.DB.Exec(`
-CREATE TABLE IF NOT EXISTS blocklist (
-  pubkey text NOT NULL
-);
+    CREATE TABLE IF NOT EXISTS blocklist (
+      pubkey text NOT NULL
+    );
     `)
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 	_, err = r.storage.DB.Exec(`
-CREATE TABLE IF NOT EXISTS allowlist (
-  pubkey text NOT NULL
-);
+    CREATE TABLE IF NOT EXISTS allowlist (
+      pubkey text NOT NULL
+    );
     `)
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
@@ -155,8 +157,7 @@ CREATE TABLE IF NOT EXISTS allowlist (
 
 func (r *Relay) reload() {
 	rows, err := r.storage.DB.Query(`
-SELECT pubkey FROM blocklist
-);
+    SELECT pubkey FROM blocklist
     `)
 	if err != nil {
 		log.Printf("failed to create server: %v", err)
@@ -177,8 +178,7 @@ SELECT pubkey FROM blocklist
 	}
 
 	rows, err = r.storage.DB.Query(`
-SELECT pubkey FROM allowlist
-);
+    SELECT pubkey FROM allowlist
     `)
 	if err != nil {
 		log.Printf("failed to create server: %v", err)
