@@ -156,6 +156,9 @@ func (r *Relay) ready() {
 }
 
 func (r *Relay) reload() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	rows, err := r.storage.DB.Query(`
     SELECT pubkey FROM blocklist
     `)
@@ -165,8 +168,6 @@ func (r *Relay) reload() {
 	}
 	defer rows.Close()
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
 	r.blocklist = []string{}
 	for rows.Next() {
 		var pubkey string
@@ -186,8 +187,6 @@ func (r *Relay) reload() {
 	}
 	defer rows.Close()
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
 	r.allowlist = []string{}
 	for rows.Next() {
 		var pubkey string
