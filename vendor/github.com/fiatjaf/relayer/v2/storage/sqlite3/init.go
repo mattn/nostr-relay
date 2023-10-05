@@ -30,6 +30,24 @@ func (b *SQLite3Backend) Init() error {
 		return err
 	}
 
+	row, err := db.Query(`SELECT id, rowid FROM event GROUP BY id HAVING COUNT(id) > 1`)
+	if err == nil {
+		for row.Next() {
+			var id, rowid string
+			err = row.Scan(&id, &rowid)
+			if err != nil {
+				continue
+			}
+			result, err := db.Exec(`DELETE FROM event WHERE id = ? AND rowid != ?`, id, rowid)
+			if err != nil {
+				continue
+			}
+			num, _ := result.RowsAffected()
+			println(id, rowid, num)
+		}
+		row.Close()
+	}
+
 	db.SetMaxOpenConns(b.MaxOpenConns)
 	db.SetMaxIdleConns(b.MaxIdleConns)
 
@@ -42,5 +60,6 @@ func (b *SQLite3Backend) Init() error {
 			return err
 		}
 	}
+	println("DONE")
 	return nil
 }
