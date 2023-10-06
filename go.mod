@@ -3,7 +3,7 @@ module github.com/mattn/nostr-relay
 go 1.20
 
 require (
-	github.com/fiatjaf/relayer/v2 v2.1.1
+	github.com/fiatjaf/relayer/v2 v2.1.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nbd-wtf/go-nostr v0.24.1
 )

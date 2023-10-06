@@ -67,14 +67,9 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 			}
 		}
 	}
-	return true
-}
 
-func (r *Relay) BeforeSave(ctx context.Context, evt *nostr.Event) {
-}
-
-func (r *Relay) AfterSave(evt *nostr.Event) {
 	json.NewEncoder(os.Stderr).Encode(evt)
+	return true
 }
 
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
