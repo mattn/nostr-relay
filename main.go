@@ -72,6 +72,18 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	return true
 }
 
+func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters) bool {
+	info := struct {
+		ID      string        `json:"id"`
+		Filters nostr.Filters `json:"filters"`
+	}{
+		ID:      id,
+		Filters: filters,
+	}
+	json.NewEncoder(os.Stderr).Encode(info)
+	return true
+}
+
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 	info := nip11.RelayInformationDocument{
 		Name:          "nostr-relay",
