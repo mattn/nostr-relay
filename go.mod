@@ -1,9 +1,11 @@
 module github.com/mattn/nostr-relay
 
-go 1.20
+go 1.21
+
+toolchain go1.21.1
 
 require (
-	github.com/fiatjaf/relayer/v2 v2.1.4
+	github.com/fiatjaf/relayer/v2 v2.1.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/nbd-wtf/go-nostr v0.24.2
