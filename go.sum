@@ -1,5 +1,7 @@
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
+github.com/andybalholm/brotli v1.0.6 h1:Yf9fFpf49Zrxb9NlQaluyE92/+X7UVHlhMNJN2sxfOI=
+github.com/andybalholm/brotli v1.0.6/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/btcsuite/btcd/btcec/v2 v2.3.2 h1:5n0X6hX0Zk+6omWcihdYvdAlGf2DfasC0GMf7DClJ3U=
 github.com/btcsuite/btcd/btcec/v2 v2.3.2/go.mod h1:zYzJ8etWJQIv1Ogk7OzpWjowwOdXY1W/17j2MW85J04=
 github.com/btcsuite/btcd/chaincfg/chainhash v1.0.2 h1:KdUfX2zKommPRa+PD0sWZUyXe9w277ABlgELO7H04IM=
@@ -23,6 +25,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/fasthttp/websocket v1.5.4 h1:Bq8HIcoiffh3pmwSKB8FqaNooluStLQQxnzQspMatgI=
 github.com/fasthttp/websocket v1.5.4/go.mod h1:R2VXd4A6KBspb5mTrsWnZwn6ULkX56/Ktk8/0UNSJao=
+github.com/fasthttp/websocket v1.5.6 h1:4WtWgRJ0Gzj1Ou+xGKy66Ji+a0mUfgAj9ZdPqHiUwQE=
+github.com/fasthttp/websocket v1.5.6/go.mod h1:yiKhNx2zFOv65YYtCJNhtl5VjdCFew3W+gt8U/9aFkI=
 github.com/fiatjaf/relayer/v2 v2.1.1-0.20230813002430-1935f62c29c0 h1:ZNcvGMvJoE8GIvCiFxoWqeon0fAk0btWdwbGdnlIqcw=
 github.com/fiatjaf/relayer/v2 v2.1.1-0.20230813002430-1935f62c29c0/go.mod h1:S1ECQML8jyBD/ViYv/I5hASstYPXzxd2DOmAH1Sw3pw=
 github.com/fiatjaf/relayer/v2 v2.1.1 h1:2B/Nse6m7y4snw4RxaTOFxJO5bTn/ecIDPqxpipg0zo=
@@ -50,6 +54,8 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/klauspost/compress v1.17.0 h1:Rnbp4K9EjcDuVuHtd0dgA4qNuv9yKDYKK1ulpJwgrqM=
 github.com/klauspost/compress v1.17.0/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
+github.com/klauspost/compress v1.17.1 h1:NE3C767s2ak2bweCZo3+rdP4U/HoyVXLv/X9f2gPS5g=
+github.com/klauspost/compress v1.17.1/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.10.3 h1:v9QZf2Sn6AmjXtQeFpdoq/eaNtYP6IN+7lcrygsIAtg=
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
@@ -61,6 +67,8 @@ github.com/nbd-wtf/go-nostr v0.22.1 h1:FeQOKK3JKb/ll+dF7+HbeOw8IPnXuIGkmCJVpzKas
 github.com/nbd-wtf/go-nostr v0.22.1/go.mod h1:eE8Qf8QszZbCd9arBQyotXqATNUElWsTEEx+LLORhyQ=
 github.com/nbd-wtf/go-nostr v0.24.1 h1:VqWDceiYTKZaOrizgwix/l/MXmDqqXHLqZd6rhiCxbo=
 github.com/nbd-wtf/go-nostr v0.24.1/go.mod h1:eE8Qf8QszZbCd9arBQyotXqATNUElWsTEEx+LLORhyQ=
+github.com/nbd-wtf/go-nostr v0.24.2 h1:1PdFED7uHh3BlXfDVD96npBc0YAgj9hPT+l6NWog4kc=
+github.com/nbd-wtf/go-nostr v0.24.2/go.mod h1:eE8Qf8QszZbCd9arBQyotXqATNUElWsTEEx+LLORhyQ=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -94,7 +102,11 @@ golang.org/x/exp v0.0.0-20230905200255-921286631fa9 h1:GoHiUyI/Tp2nVkLI2mCxVkOjs
 golang.org/x/exp v0.0.0-20230905200255-921286631fa9/go.mod h1:S2oDrQGGwySpoQPVqRShND87VCbxmc6bL1Yd2oYrm6k=
 golang.org/x/exp v0.0.0-20231005195138-3e424a577f31 h1:9k5exFQKQglLo+RoP+4zMjOFE14P6+vyR0baDAi0Rcs=
 golang.org/x/exp v0.0.0-20231005195138-3e424a577f31/go.mod h1:S2oDrQGGwySpoQPVqRShND87VCbxmc6bL1Yd2oYrm6k=
+golang.org/x/exp v0.0.0-20231006140011-7918f672742d h1:jtJma62tbqLibJ5sFQz8bKtEM8rJBtfilJ2qTU199MI=
+golang.org/x/exp v0.0.0-20231006140011-7918f672742d/go.mod h1:ldy0pHrwJyGW56pPQzzkH36rKxoZW1tw7ZJpeKx+hdo=
 golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
+golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=
+golang.org/x/net v0.17.0/go.mod h1:NxSsAGuq816PNPmqtQdLE42eU2Fs7NoRIZrHJAlaCOE=
 golang.org/x/sys v0.0.0-20221010170243-090e33056c14/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.12.0 h1:CM0HF96J0hcLAwsHPJZjfdNzs0gftsLfgKt57wWHJ0o=
