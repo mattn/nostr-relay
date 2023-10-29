@@ -208,8 +208,8 @@ func (r *Relay) reload() {
 func main() {
 	r := Relay{}
 	r.storage = &sqlite3.SQLite3Backend{
-		DatabaseURL:  os.Getenv("DATABASE_URL"),
-		MaxIdleConns: 1,
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+		//MaxIdleConns: 1,
 	}
 	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
 	if err != nil {
