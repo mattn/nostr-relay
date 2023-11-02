@@ -10,8 +10,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/fiatjaf/eventstore"
+	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/relayer/v2"
-	"github.com/fiatjaf/relayer/v2/storage/sqlite3"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
@@ -40,7 +41,7 @@ func (r *Relay) Name() string {
 	return "nostr-relay"
 }
 
-func (r *Relay) Storage(ctx context.Context) relayer.Storage {
+func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 	return r.storage
 }
 
