@@ -224,14 +224,10 @@ func main() {
 	}
 	r.ready()
 
-	r.storage.SetConnMaxIdleTime(0)
-	r.storage.SetConnMaxLifetime(0)
-	r.storage.SetMaxIdleConns(1)
-	r.storage.SetMaxOpenConns(1)
+	r.storage.SetConnMaxLifetime(1 * time.Minute)
+	r.storage.SetMaxOpenConns(10)
+	r.storage.SetMaxIdleConns(5)
 	r.storage.SetConnMaxIdleTime(30 * time.Second)
-	r.storage.SetConnMaxLifetime(0)
-	r.storage.SetConnMaxIdleTime(30 * time.Second)
-	r.storage.SetConnMaxLifetime(0)
 
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
