@@ -232,7 +232,7 @@ func main() {
 			Version: version,
 		}
 		log.Println("info2")
-		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
+		if err := r.storage.DB.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
 			log.Println(err)
 		}
 		log.Println("info3")
