@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/fiatjaf/eventstore"
 	"github.com/fiatjaf/eventstore/sqlite3"
@@ -223,6 +224,15 @@ func main() {
 	}
 	r.ready()
 
+	r.storage.SetConnMaxIdleTime(0)
+	r.storage.SetConnMaxLifetime(0)
+	r.storage.SetMaxIdleConns(1)
+	r.storage.SetMaxOpenConns(1)
+	r.storage.SetConnMaxIdleTime(30 * time.Second)
+	r.storage.SetConnMaxLifetime(0)
+	r.storage.SetConnMaxIdleTime(30 * time.Second)
+	r.storage.SetConnMaxLifetime(0)
+
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
 		log.Println("info0")
@@ -232,7 +242,7 @@ func main() {
 			Version: version,
 		}
 		log.Println("info2")
-		if err := r.storage.DB.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
+		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
 			log.Println(err)
 		}
 		log.Println("info3")
