@@ -5,11 +5,11 @@ go 1.21.0
 toolchain go1.21.1
 
 require (
-	github.com/fiatjaf/eventstore v0.0.1
-	github.com/fiatjaf/relayer/v2 v2.1.6
+	github.com/fiatjaf/eventstore v0.2.3
+	github.com/fiatjaf/relayer/v2 v2.1.7
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.17
-	github.com/nbd-wtf/go-nostr v0.24.2
+	github.com/mattn/go-sqlite3 v1.14.18
+	github.com/nbd-wtf/go-nostr v0.25.3
 )
 
 require (
@@ -24,7 +24,7 @@ require (
 	github.com/fasthttp/websocket v1.5.6 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.3.0 // indirect
+	github.com/gobwas/ws v1.3.1 // indirect
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -41,8 +41,8 @@ require (
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/time v0.4.0 // indirect
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../relayer/

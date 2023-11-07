@@ -231,19 +231,14 @@ func main() {
 
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
-		log.Println("info0")
 		w.Header().Add("content-type", "application/json")
-		log.Println("info1")
 		info := Info{
 			Version: version,
 		}
-		log.Println("info2")
 		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
 			log.Println(err)
 		}
-		log.Println("info3")
 		json.NewEncoder(w).Encode(info)
-		log.Println("info4")
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
