@@ -5,7 +5,7 @@ go 1.21.0
 toolchain go1.21.1
 
 require (
-	github.com/fiatjaf/eventstore v0.2.3
+	github.com/fiatjaf/eventstore v0.2.4
 	github.com/fiatjaf/relayer/v2 v2.1.7
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.18

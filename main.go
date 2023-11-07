@@ -56,7 +56,6 @@ func (r *Relay) Init() error {
 }
 
 func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
-	// reject events that have timestamps greater than 30 minutes in the future.
 	if evt.CreatedAt > nostr.Now()+30*60 {
 		return false
 	}
@@ -74,12 +73,22 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 			}
 		}
 	}
+	if len(evt.Content) > relayLimitationDocument.MaxContentLength {
+		return false
+	}
 
 	json.NewEncoder(os.Stderr).Encode(evt)
 	return true
 }
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters) bool {
+	if len(filters) > relayLimitationDocument.MaxFilters {
+		return false
+	}
+	if len(filters) > relayLimitationDocument.MaxFilters {
+		return false
+	}
+
 	info := struct {
 		ID      string        `json:"id"`
 		Filters nostr.Filters `json:"filters"`
@@ -91,29 +100,31 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters)
 	return true
 }
 
+var relayLimitationDocument = &nip11.RelayLimitationDocument{
+	MaxMessageLength: 524288,
+	MaxSubscriptions: 20,  //
+	MaxFilters:       10,  //
+	MaxLimit:         500, //
+	MaxSubidLength:   100, //
+	MinPrefix:        4,
+	MaxEventTags:     100,  //
+	MaxContentLength: 8196, //
+	MinPowDifficulty: 30,
+	AuthRequired:     false,
+	PaymentRequired:  false,
+}
+
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 	info := nip11.RelayInformationDocument{
-		Name:          "nostr-relay",
-		Description:   "relay powered by the relayer framework",
-		PubKey:        "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
-		Contact:       "mattn.jp@gmail.com",
-		SupportedNIPs: []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42, 45, 50},
-		Software:      "https://github.com/mattn/nostr-relay",
-		Icon:          "https://mattn.github.io/assets/image/mattn-mohawk.webp",
-		Version:       version,
-		Limitation: &nip11.RelayLimitationDocument{
-			MaxMessageLength: 524288,
-			MaxSubscriptions: 10,
-			MaxFilters:       2500,
-			MaxLimit:         5000,
-			MaxSubidLength:   256,
-			MinPrefix:        4,
-			MaxEventTags:     2500,
-			MaxContentLength: 65536,
-			MinPowDifficulty: 0,
-			AuthRequired:     false,
-			PaymentRequired:  false,
-		},
+		Name:           "nostr-relay",
+		Description:    "relay powered by the relayer framework",
+		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
+		Contact:        "mattn.jp@gmail.com",
+		SupportedNIPs:  []int{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 33, 42, 45, 50},
+		Software:       "https://github.com/mattn/nostr-relay",
+		Icon:           "https://mattn.github.io/assets/image/mattn-mohawk.webp",
+		Version:        version,
+		Limitation:     relayLimitationDocument,
 		RelayCountries: []string{},
 		LanguageTags:   []string{},
 		Tags:           []string{},
@@ -216,7 +227,11 @@ func main() {
 	r := Relay{}
 	r.storage = &sqlite3.SQLite3Backend{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
-		//MaxIdleConns: 1,
+		QueryLimit:  relayLimitationDocument.MaxLimit,
+		//QueryIDsLimit:     0,
+		//QueryAuthorsLimit: 0,
+		//QueryKindsLimit:   0,
+		QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 	}
 	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
 	if err != nil {
