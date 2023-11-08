@@ -156,8 +156,9 @@ func (r *Relay) Errorf(format string, v ...any) {
 }
 
 type Info struct {
-	Version string `json:"version"`
-	Count   int64  `json:"count"`
+	Version     string `json:"version"`
+	NumEvents   int64  `json:"num_events"`
+	NumSessions int64  `json:"num_sessions"`
 }
 
 func (r *Relay) ready() {
@@ -250,9 +251,10 @@ func main() {
 		info := Info{
 			Version: version,
 		}
-		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.Count); err != nil {
+		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
 			log.Println(err)
 		}
+		info.NumSessions = int64(r.storage.Stats().OpenConnections)
 		json.NewEncoder(w).Encode(info)
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
