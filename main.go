@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"expvar"
 	"io/fs"
 	"log"
 	"net/http"
@@ -257,6 +258,7 @@ func main() {
 		info.NumSessions = int64(r.storage.Stats().OpenConnections)
 		json.NewEncoder(w).Encode(info)
 	})
+	server.Router().Handle("/stats", expvar.Handler())
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
 	})
