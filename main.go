@@ -4,10 +4,10 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
-	"expvar"
 	"io/fs"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"sync"
 	"time"
@@ -226,6 +226,9 @@ func (r *Relay) reload() {
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+	}()
 	r := Relay{}
 	r.storage = &sqlite3.SQLite3Backend{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
@@ -258,7 +261,6 @@ func main() {
 		info.NumSessions = int64(r.storage.Stats().OpenConnections)
 		json.NewEncoder(w).Encode(info)
 	})
-	server.Router().Handle("/stats", expvar.Handler())
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
 	})
