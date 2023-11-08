@@ -245,8 +245,8 @@ func main() {
 	r.ready()
 
 	r.storage.SetConnMaxLifetime(1 * time.Minute)
-	r.storage.SetMaxOpenConns(10)
-	r.storage.SetMaxIdleConns(5)
+	r.storage.SetMaxOpenConns(80)
+	r.storage.SetMaxIdleConns(10)
 	r.storage.SetConnMaxIdleTime(30 * time.Second)
 
 	sub, _ := fs.Sub(assets, "static")
