@@ -6,11 +6,7 @@ kustomize/
 nostr-relay.sqlite-shm
 nostr-relay.sqlite-wal
 scripts/
-update.sh
-restore.sh
-store.sh
-scale.sh
-del.sh
+*.sh
 *.json
 *.diff
 *.*-wal
