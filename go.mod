@@ -1,6 +1,6 @@
 module github.com/mattn/nostr-relay
 
-go 1.21.0
+go 1.21
 
 toolchain go1.21.1
 
