@@ -82,7 +82,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	return true
 }
 
-func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters) bool {
+func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
 	if len(filters) > relayLimitationDocument.MaxFilters {
 		return false
 	}
