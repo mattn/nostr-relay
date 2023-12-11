@@ -283,26 +283,23 @@ func main() {
 
 	switch r.driverName {
 	case "sqlite3", "":
-		storage := &sqlite3.SQLite3Backend{
+		r.sqlite3Storage = &sqlite3.SQLite3Backend{
 			DatabaseURL:    databaseURL,
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
-		r.sqlite3Storage = storage
 	case "postgresql":
-		storage := &postgresql.PostgresBackend{
+		r.postgresStorage = &postgresql.PostgresBackend{
 			DatabaseURL:    databaseURL,
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
-		r.postgresStorage = storage
 	case "mysql":
-		storage := &mysql.MySQLBackend{
+		r.mysqlStorage = &mysql.MySQLBackend{
 			DatabaseURL:    databaseURL,
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
-		r.mysqlStorage = storage
 	default:
 		panic("unsupported backend driver")
 	}
