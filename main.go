@@ -268,7 +268,7 @@ func main() {
 	var databaseURL string
 
 	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name")
-	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "driver name")
+	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "driver name (sqlite3/postgresql/mysql)")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 
@@ -301,7 +301,8 @@ func main() {
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
 	default:
-		panic("unsupported backend driver")
+		fmt.Fprintln(os.Stderr, "unsupported backend driver")
+		os.Exit(2)
 	}
 
 	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
