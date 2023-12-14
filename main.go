@@ -4,6 +4,8 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -13,8 +15,11 @@ import (
 	"time"
 
 	"github.com/fiatjaf/eventstore"
+	"github.com/fiatjaf/eventstore/mysql"
+	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/relayer/v2"
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
@@ -37,7 +42,10 @@ var (
 )
 
 type Relay struct {
-	storage *sqlite3.SQLite3Backend
+	driverName      string
+	sqlite3Storage  *sqlite3.SQLite3Backend
+	postgresStorage *postgresql.PostgresBackend
+	mysqlStorage    *mysql.MySQLBackend
 
 	mu        sync.Mutex
 	allowlist []string
@@ -48,8 +56,30 @@ func (r *Relay) Name() string {
 	return "nostr-relay"
 }
 
+func (r *Relay) DB() *sqlx.DB {
+	switch r.driverName {
+	case "sqlite3":
+		return r.sqlite3Storage.DB
+	case "postgresql":
+		return r.postgresStorage.DB
+	case "mysql":
+		return r.mysqlStorage.DB
+	default:
+		panic("unsupported backend driver")
+	}
+}
+
 func (r *Relay) Storage(ctx context.Context) eventstore.Store {
-	return r.storage
+	switch r.driverName {
+	case "sqlite3":
+		return r.sqlite3Storage
+	case "postgresql":
+		return r.postgresStorage
+	case "mysql":
+		return r.mysqlStorage
+	default:
+		panic("unsupported backend driver")
+	}
 }
 
 func (r *Relay) Init() error {
@@ -162,7 +192,7 @@ type Info struct {
 }
 
 func (r *Relay) ready() {
-	_, err := r.storage.DB.Exec(`
+	_, err := r.DB().Exec(`
     CREATE TABLE IF NOT EXISTS blocklist (
       pubkey text NOT NULL
     );
@@ -170,7 +200,7 @@ func (r *Relay) ready() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
-	_, err = r.storage.DB.Exec(`
+	_, err = r.DB().Exec(`
     CREATE TABLE IF NOT EXISTS allowlist (
       pubkey text NOT NULL
     );
@@ -185,7 +215,7 @@ func (r *Relay) reload() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	rows, err := r.storage.DB.Query(`
+	rows, err := r.DB().Query(`
     SELECT pubkey FROM blocklist
     `)
 	if err != nil {
@@ -204,7 +234,7 @@ func (r *Relay) reload() {
 		r.blocklist = append(r.blocklist, pubkey)
 	}
 
-	rows, err = r.storage.DB.Query(`
+	rows, err = r.DB().Query(`
     SELECT pubkey FROM allowlist
     `)
 	if err != nil {
@@ -224,29 +254,67 @@ func (r *Relay) reload() {
 	}
 }
 
+func envDef(name, def string) string {
+	value := os.Getenv(name)
+	if value != "" {
+		return value
+	}
+	return def
+}
+
 func main() {
+	var r Relay
+	var ver bool
+	var databaseURL string
+
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name")
+	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "driver name (sqlite3/postgresql/mysql)")
+	flag.BoolVar(&ver, "version", false, "show version")
+	flag.Parse()
+
+	if ver {
+		fmt.Println(version)
+		os.Exit(0)
+	}
+
 	go func() {
 		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
 	}()
-	r := Relay{}
-	r.storage = &sqlite3.SQLite3Backend{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-		QueryLimit:  relayLimitationDocument.MaxLimit,
-		//QueryIDsLimit:     0,
-		//QueryAuthorsLimit: 0,
-		//QueryKindsLimit:   0,
-		QueryTagsLimit: relayLimitationDocument.MaxEventTags,
+
+	switch r.driverName {
+	case "sqlite3", "":
+		r.sqlite3Storage = &sqlite3.SQLite3Backend{
+			DatabaseURL:    databaseURL,
+			QueryLimit:     relayLimitationDocument.MaxLimit,
+			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
+		}
+	case "postgresql":
+		r.postgresStorage = &postgresql.PostgresBackend{
+			DatabaseURL:    databaseURL,
+			QueryLimit:     relayLimitationDocument.MaxLimit,
+			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
+		}
+	case "mysql":
+		r.mysqlStorage = &mysql.MySQLBackend{
+			DatabaseURL:    databaseURL,
+			QueryLimit:     relayLimitationDocument.MaxLimit,
+			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
+		}
+	default:
+		fmt.Fprintln(os.Stderr, "unsupported backend driver")
+		os.Exit(2)
 	}
+
 	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 	r.ready()
 
-	r.storage.SetConnMaxLifetime(1 * time.Minute)
-	r.storage.SetMaxOpenConns(80)
-	r.storage.SetMaxIdleConns(10)
-	r.storage.SetConnMaxIdleTime(30 * time.Second)
+	r.DB().SetConnMaxLifetime(1 * time.Minute)
+	r.DB().SetMaxOpenConns(80)
+	r.DB().SetMaxIdleConns(10)
+	r.DB().SetConnMaxIdleTime(30 * time.Second)
 
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
@@ -254,10 +322,10 @@ func main() {
 		info := Info{
 			Version: version,
 		}
-		if err := r.storage.QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
+		if err := r.DB().QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
 			log.Println(err)
 		}
-		info.NumSessions = int64(r.storage.Stats().OpenConnections)
+		info.NumSessions = int64(r.DB().Stats().OpenConnections)
 		json.NewEncoder(w).Encode(info)
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
