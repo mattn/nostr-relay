@@ -12,5 +12,6 @@ scripts/
 *.*-wal
 *.tmp
 *.tmp-shm
+*.patch
 bk/
 tool/
