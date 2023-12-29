@@ -10,7 +10,7 @@ COPY --link . .
 RUN mkdir /data
 ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" CGO_ENABLED=1 go install -buildvcs=false -trimpath -ldflags '-w -s -extldflags "-static"'
-RUN [ -e /usr/bin/upx ] && upx /go/bin/bsky-haikubot || echo
+RUN [ -e /usr/bin/upx ] && upx /go/bin/nostr-relay || echo
 FROM scratch
 COPY --from=build-dev /data /data
 COPY --link --from=build-dev /go/bin/nostr-relay /go/bin/nostr-relay
