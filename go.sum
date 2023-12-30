@@ -1,5 +1,6 @@
 github.com/andybalholm/brotli v1.0.6 h1:Yf9fFpf49Zrxb9NlQaluyE92/+X7UVHlhMNJN2sxfOI=
 github.com/andybalholm/brotli v1.0.6/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
+github.com/btcsuite/btcd v0.23.5-0.20230905170901-80f5a0ffdf36 h1:g/UbZ6iSzcUH9kEvC+rB8UBCqahmt69e8y6nCegczbg=
 github.com/btcsuite/btcd/btcec/v2 v2.3.2 h1:5n0X6hX0Zk+6omWcihdYvdAlGf2DfasC0GMf7DClJ3U=
 github.com/btcsuite/btcd/btcec/v2 v2.3.2/go.mod h1:zYzJ8etWJQIv1Ogk7OzpWjowwOdXY1W/17j2MW85J04=
 github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0 h1:59Kx4K6lzOW5w6nFlA0v5+lk/6sjybR934QNHSJZPTQ=
@@ -25,6 +26,8 @@ github.com/fasthttp/websocket v1.5.7 h1:0a6o2OfeATvtGgoMKleURhLT6JqWPg7fYfWnH4KH
 github.com/fasthttp/websocket v1.5.7/go.mod h1:bC4fxSono9czeXHQUVKxsC0sNjbm7lPJR04GDFqClfU=
 github.com/fiatjaf/eventstore v0.3.1 h1:GDuF8RxBNL6km9Y7qEucDQbkzKfkPJqoA/YiiIE0wao=
 github.com/fiatjaf/eventstore v0.3.1/go.mod h1:q3r6SuNhCxaSwfnK++2BratEVUcwK2NNr004hLOpz7Q=
+github.com/fiatjaf/eventstore v0.3.5 h1:otlG2L9G7wbMXPo5dqSg8zVNN9djJK2JpdQ4/j2LnMk=
+github.com/fiatjaf/eventstore v0.3.5/go.mod h1:iqGHNXOMz+ztLHXxG13WBXgz/2bG0q/p1L3olof4dYo=
 github.com/fiatjaf/relayer/v2 v2.1.9 h1:k/hRjdfbigE+xb4/NxHShAVDaR81OOZqONVOlkI80v8=
 github.com/fiatjaf/relayer/v2 v2.1.9/go.mod h1:CmVQ/g3Fjq+xxcf3bi0j4ouRuE8FWTXCTrzhGuQmS1A=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
@@ -59,6 +62,8 @@ github.com/mattn/go-sqlite3 v1.14.19 h1:fhGleo2h1p8tVChob4I9HpmVFIAkKGpiukdrgQbW
 github.com/mattn/go-sqlite3 v1.14.19/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/nbd-wtf/go-nostr v0.27.2 h1:RImJfo8IgOK2rgGNif2FHFXq4sjNwzeZILUp9JGtQDg=
 github.com/nbd-wtf/go-nostr v0.27.2/go.mod h1:e5WOFsKEpslDOxIgK00NqemH7KuAvKIW6sBXeJYCfUs=
+github.com/nbd-wtf/go-nostr v0.27.5 h1:Qn/GD9nOhZ5deKd6+t50pnDKAUSJCYhVH5X8eJ+PX3U=
+github.com/nbd-wtf/go-nostr v0.27.5/go.mod h1:v8yRjC7k572k2cTXN6gs9ycG733IZgF/D7FDEE9bKNk=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -86,6 +91,8 @@ github.com/valyala/fasthttp v1.51.0 h1:8b30A5JlZ6C7AS81RsWjYMQmrZG6feChmgAolCl1S
 github.com/valyala/fasthttp v1.51.0/go.mod h1:oI2XroL+lI7vdXyYoQk03bXBThfFl2cVdIA3Xl7cH8g=
 golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 h1:qCEDpW1G+vcj3Y7Fy52pEM1AWm3abj8WimGYejI3SC4=
 golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611/go.mod h1:iRJReGqOEeBhDZGkGbynYwcHlctCvnjTYIamk7uXpHI=
+golang.org/x/exp v0.0.0-20231226003508-02704c960a9b h1:kLiC65FbiHWFAOu+lxwNPujcsl8VYyTYYEZnsOO1WK4=
+golang.org/x/exp v0.0.0-20231226003508-02704c960a9b/go.mod h1:iRJReGqOEeBhDZGkGbynYwcHlctCvnjTYIamk7uXpHI=
 golang.org/x/net v0.19.0 h1:zTwKpTd2XuCqf8huc7Fo2iSy+4RHPd10s4KzeTnVr1c=
 golang.org/x/net v0.19.0/go.mod h1:CfAk/cbD4CthTvqiEl8NpboMuiuOYsAr/7NOjZJtv1U=
 golang.org/x/sys v0.0.0-20221010170243-090e33056c14/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

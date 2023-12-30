@@ -5,12 +5,12 @@ go 1.21.0
 toolchain go1.21.1
 
 require (
-	github.com/fiatjaf/eventstore v0.3.1
+	github.com/fiatjaf/eventstore v0.3.5
 	github.com/fiatjaf/relayer/v2 v2.1.9
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/nbd-wtf/go-nostr v0.27.2
+	github.com/nbd-wtf/go-nostr v0.27.5
 )
 
 require (
@@ -41,7 +41,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
-	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 // indirect
+	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
