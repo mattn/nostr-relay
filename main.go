@@ -108,7 +108,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
-	json.NewEncoder(os.Stderr).Encode(evt)
+	json.NewEncoder(log.Writer()).Encode(evt)
 	return true
 }
 
@@ -127,7 +127,7 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 		ID:      id,
 		Filters: filters,
 	}
-	json.NewEncoder(os.Stderr).Encode(info)
+	json.NewEncoder(log.Writer()).Encode(info)
 	return true
 }
 
