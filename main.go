@@ -36,7 +36,6 @@ var (
 	_ relayer.ReqAccepter   = (*Relay)(nil)
 	_ relayer.Informationer = (*Relay)(nil)
 	_ relayer.Logger        = (*Relay)(nil)
-	_ relayer.EventCounter  = (*Relay)(nil)
 
 	//go:embed static
 	assets embed.FS
@@ -111,19 +110,6 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 
 	json.NewEncoder(os.Stderr).Encode(evt)
 	return true
-}
-
-func (r *Relay) CountEvents(ctx context.Context, filter *nostr.Filter) (int64, error) {
-	switch r.driverName {
-	case "sqlite3":
-		return r.sqlite3Storage.CountEvents(ctx, *filter)
-	case "postgresql":
-		return r.postgresStorage.CountEvents(ctx, *filter)
-	case "mysql":
-		return r.mysqlStorage.CountEvents(ctx, *filter)
-	default:
-		panic("unsupported backend driver")
-	}
 }
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
