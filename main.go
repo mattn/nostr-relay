@@ -36,6 +36,7 @@ var (
 	_ relayer.ReqAccepter   = (*Relay)(nil)
 	_ relayer.Informationer = (*Relay)(nil)
 	_ relayer.Logger        = (*Relay)(nil)
+	_ relayer.EventCounter  = (*Relay)(nil)
 
 	//go:embed static
 	assets embed.FS
@@ -110,6 +111,19 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 
 	json.NewEncoder(os.Stderr).Encode(evt)
 	return true
+}
+
+func (r *Relay) CountEvents(ctx context.Context, filter *nostr.Filter) (int64, error) {
+	switch r.driverName {
+	case "sqlite3":
+		return r.sqlite3Storage.CountEvents(ctx, *filter)
+	case "postgresql":
+		return r.postgresStorage.CountEvents(ctx, *filter)
+	case "mysql":
+		return r.mysqlStorage.CountEvents(ctx, *filter)
+	default:
+		panic("unsupported backend driver")
+	}
 }
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
@@ -267,8 +281,8 @@ func main() {
 	var ver bool
 	var databaseURL string
 
-	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name")
-	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "driver name (sqlite3/postgresql/mysql)")
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql)")
+	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 
