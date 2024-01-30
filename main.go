@@ -263,6 +263,12 @@ func envDef(name, def string) string {
 	return def
 }
 
+func init() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	})))
+}
+
 func main() {
 	var r Relay
 	var ver bool
@@ -333,6 +339,8 @@ func main() {
 		r.reload()
 	})
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
+
+	server.Log = &r
 	if err := server.Start("0.0.0.0", 7447); err != nil {
 		log.Fatalf("server terminated: %v", err)
 	}
