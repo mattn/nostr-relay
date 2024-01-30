@@ -175,15 +175,15 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 }
 
 func (r *Relay) Infof(format string, v ...any) {
-	slog.Info(format, v...)
+	slog.Info(fmt.Sprintf(format, v...))
 }
 
 func (r *Relay) Warningf(format string, v ...any) {
-	slog.Warn(format, v...)
+	slog.Warn(fmt.Sprintf(format, v...))
 }
 
 func (r *Relay) Errorf(format string, v ...any) {
-	slog.Error(format, v...)
+	slog.Error(fmt.Sprintf(format, v...))
 }
 
 type Info struct {
