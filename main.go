@@ -109,7 +109,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
-	slog.Debug("AcceptEvent", "evt", evt)
+	slog.Debug("AcceptEvent", "event", []any{"EVENT", evt})
 	return true
 }
 
@@ -117,18 +117,7 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 	if len(filters) > relayLimitationDocument.MaxFilters {
 		return false
 	}
-	if len(filters) > relayLimitationDocument.MaxFilters {
-		return false
-	}
-
-	info := struct {
-		ID      string        `json:"id"`
-		Filters nostr.Filters `json:"filters"`
-	}{
-		ID:      id,
-		Filters: filters,
-	}
-	slog.Debug("AcceptReq", "info", info)
+	slog.Debug("AcceptReq", "req", []any{"REQ", id, filters})
 	return true
 }
 
