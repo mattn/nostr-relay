@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"log/slog"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -108,7 +109,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
-	json.NewEncoder(log.Writer()).Encode(evt)
+	slog.Debug("AcceptEvent", evt)
 	return true
 }
 
@@ -127,7 +128,7 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 		ID:      id,
 		Filters: filters,
 	}
-	json.NewEncoder(log.Writer()).Encode(info)
+	slog.Debug("AcceptReq", info)
 	return true
 }
 
@@ -174,15 +175,15 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 }
 
 func (r *Relay) Infof(format string, v ...any) {
-	log.Printf("[INFO] "+format, v...)
+	slog.Info(format, v...)
 }
 
 func (r *Relay) Warningf(format string, v ...any) {
-	log.Printf("[WARN] "+format, v...)
+	slog.Warn(format, v...)
 }
 
 func (r *Relay) Errorf(format string, v ...any) {
-	log.Printf("[ERROR] "+format, v...)
+	slog.Error(format, v...)
 }
 
 type Info struct {
