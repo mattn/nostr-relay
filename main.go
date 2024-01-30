@@ -109,7 +109,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 		return false
 	}
 
-	slog.Debug("AcceptEvent", evt)
+	slog.Debug("AcceptEvent", "evt", evt)
 	return true
 }
 
@@ -128,7 +128,7 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 		ID:      id,
 		Filters: filters,
 	}
-	slog.Debug("AcceptReq", info)
+	slog.Debug("AcceptReq", "info", info)
 	return true
 }
 
