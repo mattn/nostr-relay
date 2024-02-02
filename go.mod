@@ -9,7 +9,7 @@ require (
 	github.com/fiatjaf/relayer/v2 v2.1.11
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.20
+	github.com/mattn/go-sqlite3 v1.14.21
 	github.com/nbd-wtf/go-nostr v0.28.3
 )
 
