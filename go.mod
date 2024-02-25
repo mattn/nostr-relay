@@ -40,6 +40,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 )
 
-replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
+//replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
 
 //replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
