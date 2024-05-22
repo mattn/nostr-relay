@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/fiatjaf/eventstore"
+	"github.com/fiatjaf/eventstore/elasticsearch"
 	"github.com/fiatjaf/eventstore/mysql"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
@@ -43,10 +44,11 @@ var (
 )
 
 type Relay struct {
-	driverName      string
-	sqlite3Storage  *sqlite3.SQLite3Backend
-	postgresStorage *postgresql.PostgresBackend
-	mysqlStorage    *mysql.MySQLBackend
+	driverName           string
+	sqlite3Storage       *sqlite3.SQLite3Backend
+	postgresStorage      *postgresql.PostgresBackend
+	mysqlStorage         *mysql.MySQLBackend
+	elasticsearchStorage *elasticsearch.ElasticsearchStorage
 
 	mu        sync.Mutex
 	allowlist []string
@@ -65,6 +67,8 @@ func (r *Relay) DB() *sqlx.DB {
 		return r.postgresStorage.DB
 	case "mysql":
 		return r.mysqlStorage.DB
+	case "elasticsearch":
+		return nil
 	default:
 		panic("unsupported backend driver")
 	}
@@ -78,6 +82,8 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 		return r.postgresStorage
 	case "mysql":
 		return r.mysqlStorage
+	case "elasticsearch":
+		return r.elasticsearchStorage
 	default:
 		panic("unsupported backend driver")
 	}
@@ -182,7 +188,12 @@ type Info struct {
 }
 
 func (r *Relay) ready() {
-	_, err := r.DB().Exec(`
+	db := r.DB()
+	if db == nil {
+		return
+	}
+
+	_, err := db.Exec(`
     CREATE TABLE IF NOT EXISTS blocklist (
       pubkey text NOT NULL
     );
@@ -190,7 +201,7 @@ func (r *Relay) ready() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
-	_, err = r.DB().Exec(`
+	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS allowlist (
       pubkey text NOT NULL
     );
@@ -202,10 +213,15 @@ func (r *Relay) ready() {
 }
 
 func (r *Relay) reload() {
+	db := r.DB()
+	if db == nil {
+		return
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	rows, err := r.DB().Query(`
+	rows, err := db.Query(`
     SELECT pubkey FROM blocklist
     `)
 	if err != nil {
@@ -224,7 +240,7 @@ func (r *Relay) reload() {
 		r.blocklist = append(r.blocklist, pubkey)
 	}
 
-	rows, err = r.DB().Query(`
+	rows, err = db.Query(`
     SELECT pubkey FROM allowlist
     `)
 	if err != nil {
@@ -297,8 +313,13 @@ func main() {
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
+	case "elasticsearch":
+		r.elasticsearchStorage = &elasticsearch.ElasticsearchStorage{
+			URL:       databaseURL,
+			IndexName: "",
+		}
 	default:
-		fmt.Fprintln(os.Stderr, "unsupported backend driver")
+		fmt.Fprintln(os.Stderr, "unsupported backend driver:", r.driverName)
 		os.Exit(2)
 	}
 
@@ -308,10 +329,12 @@ func main() {
 	}
 	r.ready()
 
-	r.DB().SetConnMaxLifetime(1 * time.Minute)
-	r.DB().SetMaxOpenConns(80)
-	r.DB().SetMaxIdleConns(10)
-	r.DB().SetConnMaxIdleTime(30 * time.Second)
+	if db := r.DB(); db != nil {
+		r.DB().SetConnMaxLifetime(1 * time.Minute)
+		r.DB().SetMaxOpenConns(80)
+		r.DB().SetMaxIdleConns(10)
+		r.DB().SetConnMaxIdleTime(30 * time.Second)
+	}
 
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
