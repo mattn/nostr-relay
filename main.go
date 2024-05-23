@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/fiatjaf/eventstore"
 	"github.com/fiatjaf/eventstore/mysql"
+	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/relayer/v2"
@@ -43,10 +45,11 @@ var (
 )
 
 type Relay struct {
-	driverName      string
-	sqlite3Storage  *sqlite3.SQLite3Backend
-	postgresStorage *postgresql.PostgresBackend
-	mysqlStorage    *mysql.MySQLBackend
+	driverName        string
+	sqlite3Storage    *sqlite3.SQLite3Backend
+	postgresStorage   *postgresql.PostgresBackend
+	mysqlStorage      *mysql.MySQLBackend
+	opensearchStorage *opensearch.OpensearchStorage
 
 	mu        sync.Mutex
 	allowlist []string
@@ -65,6 +68,8 @@ func (r *Relay) DB() *sqlx.DB {
 		return r.postgresStorage.DB
 	case "mysql":
 		return r.mysqlStorage.DB
+	case "opensearch":
+		return nil
 	default:
 		panic("unsupported backend driver")
 	}
@@ -78,6 +83,8 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 		return r.postgresStorage
 	case "mysql":
 		return r.mysqlStorage
+	case "opensearch":
+		return r.opensearchStorage
 	default:
 		panic("unsupported backend driver")
 	}
@@ -182,7 +189,12 @@ type Info struct {
 }
 
 func (r *Relay) ready() {
-	_, err := r.DB().Exec(`
+	db := r.DB()
+	if db == nil {
+		return
+	}
+
+	_, err := db.Exec(`
     CREATE TABLE IF NOT EXISTS blocklist (
       pubkey text NOT NULL
     );
@@ -190,7 +202,7 @@ func (r *Relay) ready() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
-	_, err = r.DB().Exec(`
+	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS allowlist (
       pubkey text NOT NULL
     );
@@ -202,10 +214,15 @@ func (r *Relay) ready() {
 }
 
 func (r *Relay) reload() {
+	db := r.DB()
+	if db == nil {
+		return
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	rows, err := r.DB().Query(`
+	rows, err := db.Query(`
     SELECT pubkey FROM blocklist
     `)
 	if err != nil {
@@ -224,7 +241,7 @@ func (r *Relay) reload() {
 		r.blocklist = append(r.blocklist, pubkey)
 	}
 
-	rows, err = r.DB().Query(`
+	rows, err = db.Query(`
     SELECT pubkey FROM allowlist
     `)
 	if err != nil {
@@ -261,9 +278,11 @@ func init() {
 func main() {
 	var r Relay
 	var ver bool
+	var addr string
 	var databaseURL string
 
-	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql)")
+	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql/opensearch)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
@@ -271,6 +290,15 @@ func main() {
 	if ver {
 		fmt.Println(version)
 		os.Exit(0)
+	}
+
+	host, sport, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Fatalf("failed to parse address: %v", err)
+	}
+	port, err := net.LookupPort("tcp", sport)
+	if err != nil {
+		log.Fatalf("failed to parse port number: %v", err)
 	}
 
 	go func() {
@@ -297,8 +325,14 @@ func main() {
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
+	case "opensearch":
+		r.opensearchStorage = &opensearch.OpensearchStorage{
+			URL:       databaseURL,
+			IndexName: "",
+			Insecure:  true,
+		}
 	default:
-		fmt.Fprintln(os.Stderr, "unsupported backend driver")
+		fmt.Fprintln(os.Stderr, "unsupported backend driver:", r.driverName)
 		os.Exit(2)
 	}
 
@@ -308,10 +342,12 @@ func main() {
 	}
 	r.ready()
 
-	r.DB().SetConnMaxLifetime(1 * time.Minute)
-	r.DB().SetMaxOpenConns(80)
-	r.DB().SetMaxIdleConns(10)
-	r.DB().SetConnMaxIdleTime(30 * time.Second)
+	if db := r.DB(); db != nil {
+		r.DB().SetConnMaxLifetime(1 * time.Minute)
+		r.DB().SetMaxOpenConns(80)
+		r.DB().SetMaxIdleConns(10)
+		r.DB().SetConnMaxIdleTime(30 * time.Second)
+	}
 
 	sub, _ := fs.Sub(assets, "static")
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
@@ -331,7 +367,7 @@ func main() {
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
 	server.Log = &r
-	if err := server.Start("0.0.0.0", 7447); err != nil {
+	if err := server.Start(host, port); err != nil {
 		log.Fatalf("server terminated: %v", err)
 	}
 }
