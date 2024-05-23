@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -16,8 +17,8 @@ import (
 	"time"
 
 	"github.com/fiatjaf/eventstore"
-	"github.com/fiatjaf/eventstore/elasticsearch"
 	"github.com/fiatjaf/eventstore/mysql"
+	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/relayer/v2"
@@ -44,11 +45,11 @@ var (
 )
 
 type Relay struct {
-	driverName           string
-	sqlite3Storage       *sqlite3.SQLite3Backend
-	postgresStorage      *postgresql.PostgresBackend
-	mysqlStorage         *mysql.MySQLBackend
-	elasticsearchStorage *elasticsearch.ElasticsearchStorage
+	driverName        string
+	sqlite3Storage    *sqlite3.SQLite3Backend
+	postgresStorage   *postgresql.PostgresBackend
+	mysqlStorage      *mysql.MySQLBackend
+	opensearchStorage *opensearch.OpensearchStorage
 
 	mu        sync.Mutex
 	allowlist []string
@@ -67,7 +68,7 @@ func (r *Relay) DB() *sqlx.DB {
 		return r.postgresStorage.DB
 	case "mysql":
 		return r.mysqlStorage.DB
-	case "elasticsearch":
+	case "opensearch":
 		return nil
 	default:
 		panic("unsupported backend driver")
@@ -82,8 +83,8 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 		return r.postgresStorage
 	case "mysql":
 		return r.mysqlStorage
-	case "elasticsearch":
-		return r.elasticsearchStorage
+	case "opensearch":
+		return r.opensearchStorage
 	default:
 		panic("unsupported backend driver")
 	}
@@ -277,9 +278,11 @@ func init() {
 func main() {
 	var r Relay
 	var ver bool
+	var addr string
 	var databaseURL string
 
-	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql)")
+	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql/opensearch)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
@@ -287,6 +290,15 @@ func main() {
 	if ver {
 		fmt.Println(version)
 		os.Exit(0)
+	}
+
+	host, sport, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Fatalf("failed to parse address: %v", err)
+	}
+	port, err := net.LookupPort("tcp", sport)
+	if err != nil {
+		log.Fatalf("failed to parse port number: %v", err)
 	}
 
 	go func() {
@@ -313,10 +325,11 @@ func main() {
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
 		}
-	case "elasticsearch":
-		r.elasticsearchStorage = &elasticsearch.ElasticsearchStorage{
+	case "opensearch":
+		r.opensearchStorage = &opensearch.OpensearchStorage{
 			URL:       databaseURL,
 			IndexName: "",
+			Insecure:  true,
 		}
 	default:
 		fmt.Fprintln(os.Stderr, "unsupported backend driver:", r.driverName)
@@ -354,7 +367,7 @@ func main() {
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
 	server.Log = &r
-	if err := server.Start("0.0.0.0", 7447); err != nil {
+	if err := server.Start(host, port); err != nil {
 		log.Fatalf("server terminated: %v", err)
 	}
 }
