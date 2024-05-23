@@ -48,4 +48,4 @@ require (
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
 
 //replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
-replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
+//replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
