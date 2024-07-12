@@ -3,12 +3,12 @@ module github.com/mattn/nostr-relay
 go 1.22.0
 
 require (
-	github.com/fiatjaf/eventstore v0.4.5
+	github.com/fiatjaf/eventstore v0.5.1
 	github.com/fiatjaf/relayer/v2 v2.1.12
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/nbd-wtf/go-nostr v0.31.2
+	github.com/nbd-wtf/go-nostr v0.34.2
 )
 
 require (
@@ -20,28 +20,28 @@ require (
 	github.com/decred/dcrd/crypto/blake256 v1.0.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
-	github.com/fasthttp/websocket v1.5.8 // indirect
+	github.com/fasthttp/websocket v1.5.10 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/opensearch-project/opensearch-go/v4 v4.0.0 // indirect
-	github.com/puzpuzpuz/xsync/v3 v3.1.0 // indirect
+	github.com/opensearch-project/opensearch-go/v4 v4.1.0 // indirect
+	github.com/puzpuzpuz/xsync/v3 v3.3.1 // indirect
 	github.com/rs/cors v1.11.0 // indirect
-	github.com/savsgio/gotils v0.0.0-20240303185622-093b76447511 // indirect
+	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/tidwall/gjson v1.17.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.54.0 // indirect
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	github.com/valyala/fasthttp v1.55.0 // indirect
+	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
+	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
 
