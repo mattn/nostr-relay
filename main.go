@@ -355,10 +355,12 @@ func main() {
 		info := Info{
 			Version: version,
 		}
-		if err := r.DB().QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
-			log.Println(err)
+		if db := r.DB(); db != nil {
+			if err := db.QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
+				log.Println(err)
+			}
+			info.NumSessions = int64(r.DB().Stats().OpenConnections)
 		}
-		info.NumSessions = int64(r.DB().Stats().OpenConnections)
 		json.NewEncoder(w).Encode(info)
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
