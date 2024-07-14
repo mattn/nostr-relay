@@ -132,7 +132,7 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 var relayLimitationDocument = &nip11.RelayLimitationDocument{
 	MaxMessageLength: 524288,
 	MaxSubscriptions: 20,    //
-	MaxFilters:       15,    //
+	MaxFilters:       20,    //
 	MaxLimit:         500,   //
 	MaxSubidLength:   100,   //
 	MaxEventTags:     100,   //
