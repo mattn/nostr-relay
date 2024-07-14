@@ -30,7 +30,7 @@ import (
 
 const name = "nostr-relay"
 
-const version = "0.0.142"
+const version = "0.0.143"
 
 var revision = "HEAD"
 
