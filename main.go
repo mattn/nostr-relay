@@ -13,6 +13,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -276,6 +277,17 @@ func init() {
 	})))
 }
 
+func skipEventFunc(ev *nostr.Event) bool {
+	now := nostr.Now()
+	for _, ex := range ev.Tags.GetAll([]string{"expiration"}) {
+		v, err := strconv.ParseUint(ex.Value(), 10, 64)
+		if err == nil && nostr.Timestamp(v) <= now {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	var r Relay
 	var ver bool
@@ -337,7 +349,11 @@ func main() {
 		os.Exit(2)
 	}
 
-	server, err := relayer.NewServer(&r, relayer.WithPerConnectionLimiter(5.0, 1))
+	server, err := relayer.NewServer(
+		&r,
+		relayer.WithPerConnectionLimiter(5.0, 1),
+		relayer.WithSkipEventFunc(skipEventFunc),
+	)
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
