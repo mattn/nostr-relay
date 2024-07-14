@@ -122,6 +122,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
 	if len(filters) > relayLimitationDocument.MaxFilters {
+		slog.Debug("AcceptReq", fmt.Sprintf("filters is limited as %d (but %d)", relayLimitationDocument.MaxFilters, len(filters)))
 		return false
 	}
 	slog.Debug("AcceptReq", "req", []any{"REQ", id, filters})
