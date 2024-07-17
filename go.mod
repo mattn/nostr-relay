@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/fiatjaf/eventstore v0.5.3
-	github.com/fiatjaf/relayer/v2 v2.1.14
+	github.com/fiatjaf/relayer/v2 v2.1.15
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
