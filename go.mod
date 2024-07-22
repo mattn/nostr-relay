@@ -3,8 +3,8 @@ module github.com/mattn/nostr-relay
 go 1.22.0
 
 require (
-	github.com/fiatjaf/eventstore v0.6.0
-	github.com/fiatjaf/relayer/v2 v2.1.16
+	github.com/fiatjaf/eventstore v0.6.1
+	github.com/fiatjaf/relayer/v2 v2.2.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
@@ -46,6 +46,4 @@ require (
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
-
-//replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
 //replace github.com/fiatjaf/eventstore => ../../go/src/github.com/fiatjaf/eventstore
