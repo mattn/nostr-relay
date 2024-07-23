@@ -14,5 +14,6 @@ scripts/
 *.tmp
 *.tmp-shm
 *.patch
+*.log
 bk/
 tool/
