@@ -3,7 +3,7 @@ module github.com/mattn/nostr-relay
 go 1.22.0
 
 require (
-	github.com/fiatjaf/eventstore v0.7.0
+	github.com/fiatjaf/eventstore v0.7.1
 	github.com/fiatjaf/relayer/v2 v2.2.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
