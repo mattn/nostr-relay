@@ -314,9 +314,11 @@ func main() {
 		log.Fatalf("failed to parse port number: %v", err)
 	}
 
-	go func() {
-		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-	}()
+	if envDef("ENABLE_PPOROF", "no") == "yes" {
+		go func() {
+			log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+		}()
+	}
 
 	switch r.driverName {
 	case "sqlite3", "":
