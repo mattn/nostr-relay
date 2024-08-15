@@ -4,11 +4,11 @@ go 1.23.0
 
 require (
 	github.com/fiatjaf/eventstore v0.7.1
-	github.com/fiatjaf/relayer/v2 v2.2.0
+	github.com/fiatjaf/relayer/v2 v2.2.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/nbd-wtf/go-nostr v0.34.4
+	github.com/nbd-wtf/go-nostr v0.34.5
 )
 
 require (
@@ -34,15 +34,15 @@ require (
 	github.com/puzpuzpuz/xsync/v3 v3.4.0 // indirect
 	github.com/rs/cors v1.11.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
-	github.com/tidwall/gjson v1.17.1 // indirect
+	github.com/tidwall/gjson v1.17.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0 // indirect
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
