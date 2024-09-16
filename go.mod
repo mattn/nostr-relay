@@ -3,12 +3,12 @@ module github.com/mattn/nostr-relay
 go 1.23.0
 
 require (
-	github.com/fiatjaf/eventstore v0.8.1
+	github.com/fiatjaf/eventstore v0.9.0
 	github.com/fiatjaf/relayer/v2 v2.2.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.23
-	github.com/nbd-wtf/go-nostr v0.34.13
+	github.com/nbd-wtf/go-nostr v0.36.1
 )
 
 require (
@@ -39,9 +39,9 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0 // indirect
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
-	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 )
 
