@@ -1,4 +1,5 @@
 nostr-relay
+nostr-relay.exe
 nostr-relay.sqlite
 litestream.yaml
 .nostr-relay.sqlite-litestream
