@@ -21,8 +21,8 @@ github.com/fasthttp/websocket v1.5.10 h1:bc7NIGyrg1L6sd5pRzCIbXpro54SZLEluZCu0rO
 github.com/fasthttp/websocket v1.5.10/go.mod h1:BwHeuXGWzCW1/BIKUKD3+qfCl+cTdsHu/f243NcAI/Q=
 github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
-github.com/fiatjaf/eventstore v0.10.1 h1:zgXrRhpyjzX0Eub4T6zkMZ60zRnIPJqy/Ipfx5h+yWo=
-github.com/fiatjaf/eventstore v0.10.1/go.mod h1:h5CdLSF7mEQ7/rWpEABTRIrNuFoSwdQDi/nZkW/vVFU=
+github.com/fiatjaf/eventstore v0.11.0 h1:4bKq8tw0CClNYSp7hAQ4YjLOVQ7Syeoe1ZWkROW7PwI=
+github.com/fiatjaf/eventstore v0.11.0/go.mod h1:oCHPB4TprrNjbhH2kjMKt1O48O1pk3VxAy5iZkB5Fb0=
 github.com/fiatjaf/relayer/v2 v2.2.1 h1:BO9Za6kFB2n0aCAv5BCWfIijrSF3dGLZDoCC/8zgb0Y=
 github.com/fiatjaf/relayer/v2 v2.2.1/go.mod h1:5HASI/J7g/8h7KAGg1mw7scM3tJy5kggtyrdMyxmLao=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
@@ -52,8 +52,8 @@ github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJ
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/mattn/go-sqlite3 v1.14.23 h1:gbShiuAP1W5j9UOksQ06aiiqPMxYecovVGwmTxWtuw0=
 github.com/mattn/go-sqlite3 v1.14.23/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
-github.com/nbd-wtf/go-nostr v0.38.0 h1:WSRMxKdlL2otCtHrpyXUUKOG77SGookqqWk6yX2MKCU=
-github.com/nbd-wtf/go-nostr v0.38.0/go.mod h1:TGKGj00BmJRXvRe0LlpDN3KKbELhhPXgBwUEhzu3Oq0=
+github.com/nbd-wtf/go-nostr v0.38.1 h1:D0moEtIpjhWs2zbgeRyokA4TOLzBdumtpL1/O7/frww=
+github.com/nbd-wtf/go-nostr v0.38.1/go.mod h1:TGKGj00BmJRXvRe0LlpDN3KKbELhhPXgBwUEhzu3Oq0=
 github.com/opensearch-project/opensearch-go/v4 v4.2.0 h1:uaBexfVdeSU15yOUPYF+IY059koVP0oNQPyoSde6N/A=
 github.com/opensearch-project/opensearch-go/v4 v4.2.0/go.mod h1:9v6a0OHRIeHwLPQlHOia18bw6R5XKECoXy93TWjX/10=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -66,8 +66,8 @@ github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 h1:D0vL7YNisV2yqE55
 github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38/go.mod h1:sM7Mt7uEoCeFSCBM+qBrqvEo+/9vdmj19wzp3yzUhmg=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tidwall/gjson v1.17.3 h1:bwWLZU7icoKRG+C+0PNwIKC6FCJO/Q3p2pZvuP0jN94=
-github.com/tidwall/gjson v1.17.3/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
+github.com/tidwall/gjson v1.18.0 h1:FIDeeyB800efLX89e5a8Y0BNH+LOngJyGrIWxG2FKQY=
+github.com/tidwall/gjson v1.18.0/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
 github.com/tidwall/match v1.1.1/go.mod h1:eRSPERbgtNPcGhD8UCthc6PmLEQXEWd3PRB5JTxsfmM=
 github.com/tidwall/pretty v1.2.0/go.mod h1:ITEVvHYasfjBbM0u2Pg8T2nJnzm8xPwvNhhsoaGGjNU=
