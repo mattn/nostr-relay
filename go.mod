@@ -3,11 +3,11 @@ module github.com/mattn/nostr-relay
 go 1.23.0
 
 require (
-	github.com/fiatjaf/eventstore v0.10.1
+	github.com/fiatjaf/eventstore v0.11.0
 	github.com/fiatjaf/relayer/v2 v2.2.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nbd-wtf/go-nostr v0.38.0
+	github.com/nbd-wtf/go-nostr v0.38.1
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	github.com/puzpuzpuz/xsync/v3 v3.4.0 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
-	github.com/tidwall/gjson v1.17.3 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
