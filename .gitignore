@@ -9,6 +9,7 @@ nostr-relay.sqlite-shm
 nostr-relay.sqlite-wal
 scripts/
 *.sh
+*.cmd
 *.json
 *.diff
 *.*-wal
