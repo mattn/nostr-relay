@@ -15,7 +15,7 @@ build:
 .PHONY: release
 release:
 	go build -ldflags=$(BUILD_LDFLAGS) -o $(BIN) .
-	zip -r nostr-relay-$(GOOS)-$(GOARCH)-$(VERSION).zip $(BIN)
+	zip -r nostr-relay-$(shell go env GOOS)-$(shell go env GOARCH)-$(VERSION).zip $(BIN)
 
 .PHONY: install
 install:
