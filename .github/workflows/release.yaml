@@ -37,7 +37,7 @@ jobs:
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist-linux
+        name: dist-linux-${{ strategy.job-index }}
         path: nostr-relay-linux-*.zip
 
   build_for_macos:
@@ -67,7 +67,7 @@ jobs:
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist-darwin
+        name: dist-darwin-${{ strategy.job-index }}
         path: nostr-relay-darwin-*.zip
 
   build_for_windows:
@@ -89,16 +89,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - name: Build amd64
-      shell: bash
-      env:
-        CGO_ENABLED: 1
-      run: make release
-    - name: Archive artifacts amd64
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-windows
-        path: nostr-relay-windows-amd64-*.zip
     - name: Build
       shell: bash
       env:
@@ -107,7 +97,7 @@ jobs:
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist-windows
+        name: dist-windows-${{ strategy.job-index }}
         path: nostr-relay-windows-*.zip
 
   release:
