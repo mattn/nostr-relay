@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        rows:
+        - { goos: linux,   arch: arm64, platform: linux-aarch_64   }
+        - { goos: linux,   arch: amd64, platform: linux-x86_64     }
     steps:
     - name: Install build dependencies
       run: |
@@ -33,6 +33,8 @@ jobs:
       shell: bash
       env:
         CGO_ENABLED: 1
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
       run: make release
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
@@ -45,9 +47,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        platform:
-          - macos/amd64
-          - macos/arm64
+        rows:
+        - { goos: darwin,  arch: arm64, platform: osx-aarch_64     }
+        - { goos: darwin,  arch: amd64, platform: osx-x86_64       }
     steps:
     - name: Install build dependencies
       run: brew install coreutils zip
@@ -63,6 +65,8 @@ jobs:
       shell: bash
       env:
         CGO_ENABLED: 1
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
       run: make release
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
@@ -75,9 +79,9 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        platform:
-          - windows/amd64
-          - windows/arm64
+        rows:
+        - { goos: windows, arch: arm64, platform: windows-aarch_64 }
+        - { goos: windows, arch: amd64, platform: windows-x86_64   }
     steps:
     - name: Install build dependencies
       run: choco install zip mingw
@@ -93,6 +97,8 @@ jobs:
       shell: bash
       env:
         CGO_ENABLED: 1
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
       run: make release
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
