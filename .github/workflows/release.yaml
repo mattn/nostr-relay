@@ -118,4 +118,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           generate_release_notes: true
-          files: dist-*/nostr-relay*.zip
+          files: |
+            dist-*/nostr-relay-linux-arm64-*.zip
+            dist-*/nostr-relay-linux-amd64-*.zip
+            dist-*/nostr-relay-darwin-arm64-*.zip
+            dist-*/nostr-relay-darwin-amd64-*.zip
+            dist-*/nostr-relay-windows-arm64-*.zip
+            dist-*/nostr-relay-windows-amd64-*.zip
