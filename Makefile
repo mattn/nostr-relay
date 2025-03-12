@@ -12,6 +12,11 @@ all: clean build
 build:
 	go build -ldflags=$(BUILD_LDFLAGS) -o $(BIN) .
 
+.PHONY: release
+release:
+	go build -ldflags=$(BUILD_LDFLAGS) -o $(BIN) .
+	zip -r nostr-relay-$(GOOS)-$(VERSION).zip $(BIN)
+
 .PHONY: install
 install:
 	go install -ldflags=$(BUILD_LDFLAGS) .
