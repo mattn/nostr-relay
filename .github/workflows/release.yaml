@@ -33,18 +33,26 @@ jobs:
         GOOS: linux
         GOARCH: amd64
       run: make release
-    - name: Archive artifacts
+    - name: Archive artifacts amd64
       uses: actions/upload-artifact@v3
       with:
         name: dist-linux
-        path: nostr-relay-linux-*.zip
+        path: nostr-relay-linux-amd64.zip
+    - name: Build arm64
+      env:
+        CGO_ENABLED: 1
+        GOOS: linux
+        GOARCH: arm64
+      run: make release
+    - name: Archive artifacts arm64
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-linux
+        path: nostr-relay-linux-arm64.zip
 
   build_for_macos:
     name: Build for MacOS
     runs-on: macos-latest
-    strategy:
-      matrix:
-        goarch: [amd64, arm64]
     steps:
     - name: Install build dependencies
       run: brew install coreutils
@@ -62,18 +70,26 @@ jobs:
         GOOS: darwin
         GOARCH: amd64
       run: make release
-    - name: Archive artifacts
+    - name: Archive artifacts amd64
       uses: actions/upload-artifact@v3
       with:
         name: dist-darwin
-        path: nostr-relay-darwin-*.zip
+        path: nostr-relay-darwin-amd64.zip
+    - name: Build arm64
+      env:
+        CGO_ENABLED: 1
+        GOOS: darwin
+        GOARCH: arm64
+      run: make release
+    - name: Archive artifacts arm64
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-darwin
+        path: nostr-relay-darwin-arm64.zip
 
   build_for_windows:
     name: Build for Windows
     runs-on: windows-latest
-    strategy:
-      matrix:
-        goarch: [amd64, arm64]
     steps:
     - name: Install build dependencies
       run: choco install zip
@@ -92,11 +108,23 @@ jobs:
         GOOS: windows
         GOARCH: amd64
       run: make release
-    - name: Archive artifacts
+    - name: Archive artifacts amd64
       uses: actions/upload-artifact@v3
       with:
         name: dist-windows
-        path: nostr-relay-windows-*.zip
+        path: nostr-relay-windows-amd64.zip
+    - name: Build arm64
+      shell: bash
+      env:
+        CGO_ENABLED: 1
+        GOOS: windows
+        GOARCH: arm64
+      run: make release
+    - name: Archive artifacts arm64
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-windows
+        path: nostr-relay-windows-arm64.zip
 
   release:
     name: Draft Release
