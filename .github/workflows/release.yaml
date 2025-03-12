@@ -118,4 +118,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           generate_release_notes: true
-          files: dist-*/nostr-relay*.*
+          files: nostr-relay*.zip
