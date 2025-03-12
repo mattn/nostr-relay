@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         rows:
-        - { goos: linux,   arch: arm64, platform: linux-aarch_64   }
+        #- { goos: linux,   arch: arm64, platform: linux-aarch_64   }
         - { goos: linux,   arch: amd64, platform: linux-x86_64     }
     steps:
     - name: Install build dependencies
@@ -48,7 +48,7 @@ jobs:
     strategy:
       matrix:
         rows:
-        - { goos: darwin,  arch: arm64, platform: osx-aarch_64     }
+        #- { goos: darwin,  arch: arm64, platform: osx-aarch_64     }
         - { goos: darwin,  arch: amd64, platform: osx-x86_64       }
     steps:
     - name: Install build dependencies
@@ -80,7 +80,7 @@ jobs:
     strategy:
       matrix:
         rows:
-        - { goos: windows, arch: arm64, platform: windows-aarch_64 }
+        #- { goos: windows, arch: arm64, platform: windows-aarch_64 }
         - { goos: windows, arch: amd64, platform: windows-x86_64   }
     steps:
     - name: Install build dependencies
