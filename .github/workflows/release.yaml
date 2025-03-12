@@ -18,7 +18,7 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt-get install -y --no-install-recommends \
-          build-essential
+          build-essential zip
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -37,7 +37,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-linux
-        path: nostr-relay-linux-amd64.zip
+        path: nostr-relay-linux-amd64-*.zip
     - name: Build arm64
       env:
         CGO_ENABLED: 1
@@ -48,14 +48,14 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-linux
-        path: nostr-relay-linux-arm64.zip
+        path: nostr-relay-linux-arm64-*.zip
 
   build_for_macos:
     name: Build for MacOS
     runs-on: macos-latest
     steps:
     - name: Install build dependencies
-      run: brew install coreutils
+      run: brew install coreutils zip
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -74,7 +74,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-darwin
-        path: nostr-relay-darwin-amd64.zip
+        path: nostr-relay-darwin-amd64-*.zip
     - name: Build arm64
       env:
         CGO_ENABLED: 1
@@ -85,14 +85,14 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-darwin
-        path: nostr-relay-darwin-arm64.zip
+        path: nostr-relay-darwin-arm64-*.zip
 
   build_for_windows:
     name: Build for Windows
     runs-on: windows-latest
     steps:
     - name: Install build dependencies
-      run: choco install zip
+      run: choco install zip mingw
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -112,7 +112,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-windows
-        path: nostr-relay-windows-amd64.zip
+        path: nostr-relay-windows-amd64-*.zip
     - name: Build arm64
       shell: bash
       env:
@@ -124,7 +124,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-windows
-        path: nostr-relay-windows-arm64.zip
+        path: nostr-relay-windows-arm64-*.zip
 
   release:
     name: Draft Release
@@ -142,6 +142,6 @@ jobs:
         with:
           name: nostr-relay ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
+          draft: false
           generate_release_notes: true
           files: dist-*/nostr-relay*.*
