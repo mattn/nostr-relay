@@ -27,28 +27,13 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - name: Build amd64
-      env:
-        CGO_ENABLED: 1
-        GOOS: linux
-        GOARCH: amd64
+    - name: Build
       run: make release
-    - name: Archive artifacts amd64
+    - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist-linux
-        path: nostr-relay-linux-amd64-*.zip
-    - name: Build arm64
-      env:
-        CGO_ENABLED: 1
-        GOOS: linux
-        GOARCH: arm64
-      run: make release
-    - name: Archive artifacts arm64
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-linux
-        path: nostr-relay-linux-arm64-*.zip
+        path: nostr-relay-linux-*.zip
 
   build_for_macos:
     name: Build for MacOS
