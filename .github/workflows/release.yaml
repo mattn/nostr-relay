@@ -2,121 +2,84 @@ name: Release
 on:
   push:
     tags:
-    - 'v*'
+      - 'v*'
+
 env:
   GO_VERSION: stable
 
 jobs:
-  build_for_linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
+  build:
     strategy:
       matrix:
-        rows:
-        #- { goos: linux,   arch: arm64, platform: linux-aarch_64   }
-        - { goos: linux,   arch: amd64, platform: linux-x86_64     }
-    steps:
-    - name: Install build dependencies
-      run: |
-        sudo apt-get -qq update
-        sudo apt-get install -y --no-install-recommends \
-          build-essential zip
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - name: Build
-      shell: bash
-      env:
-        CGO_ENABLED: 1
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-      run: make release
-    - name: Archive artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-linux-${{ strategy.job-index }}
-        path: nostr-relay-linux-*.zip
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.os }}
 
-  build_for_macos:
-    name: Build for MacOS
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        rows:
-        #- { goos: darwin,  arch: arm64, platform: osx-aarch_64     }
-        - { goos: darwin,  arch: amd64, platform: osx-x86_64       }
     steps:
-    - name: Install build dependencies
-      run: brew install coreutils zip
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - name: Build
-      shell: bash
-      env:
-        CGO_ENABLED: 1
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-      run: make release
-    - name: Archive artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-darwin-${{ strategy.job-index }}
-        path: nostr-relay-darwin-*.zip
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  build_for_windows:
-    name: Build for Windows
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        rows:
-        #- { goos: windows, arch: arm64, platform: windows-aarch_64 }
-        - { goos: windows, arch: amd64, platform: windows-x86_64   }
-    steps:
-    - name: Install build dependencies
-      run: choco install zip mingw
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - name: Build
-      shell: bash
-      env:
-        CGO_ENABLED: 1
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-      run: make release
-    - name: Archive artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-windows-${{ strategy.job-index }}
-        path: nostr-relay-windows-*.zip
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            gcc-aarch64-linux-gnu \
+            libc6-dev-arm64-cross \
+            gcc-mingw-w64
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows' && matrix.arch != 'arm64'
+        run: |
+          choco install mingw
+          choco install gcc-arm
+
+      - name: Install dependencies (MacOS)
+        if: runner.os == 'macOS'
+        run: brew install gcc
+
+      - name: Build
+        if: ${{ !(matrix.os == 'windows-latest' && matrix.arch == 'arm64') }}
+        env:
+          CGO_ENABLED: 1
+          GOOS: ${{ runner.os == 'Windows' && 'windows' || runner.os == 'Linux' && 'linux' || 'darwin' }}
+          GOARCH: ${{ matrix.arch }}
+          CC: ${{ runner.os == 'macOS' && 'clang' || (runner.os == 'Linux' && matrix.arch == 'arm64') && 'aarch64-linux-gnu-gcc' || (runner.os == 'Windows' && matrix.arch == 'arm64') && 'arm-none-eabi-gcc' || 'gcc' }}
+        shell: pwsh
+        run: |
+          if ($env:runner_os -eq "Windows") {
+            go build -o "nostr-relay-${{ runner.os }}-${{ matrix.arch }}.exe"
+          } else {
+            go build -o "nostr-relay-${{ runner.os }}-${{ matrix.arch }}"
+          }
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nostr-relay-${{ runner.os }}-${{ matrix.arch }}
+          path: nostr-relay-${{ runner.os }}-${{ matrix.arch }}*
 
   release:
-    name: Draft Release
-    needs:
-      - build_for_linux
-      - build_for_macos
-      - build_for_windows
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts from the build job
         uses: actions/download-artifact@v4
-      - name: Release
+
+      #- name: Debug
+      #  run: |
+      #    find .
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -125,9 +88,5 @@ jobs:
           draft: false
           generate_release_notes: true
           files: |
-            dist-*/nostr-relay-linux-arm64-*.zip
-            dist-*/nostr-relay-linux-amd64-*.zip
-            dist-*/nostr-relay-darwin-arm64-*.zip
-            dist-*/nostr-relay-darwin-amd64-*.zip
-            dist-*/nostr-relay-windows-arm64-*.zip
-            dist-*/nostr-relay-windows-amd64-*.zip
+            ./nostr-relay-*/nostr-relay-*
+
