@@ -36,9 +36,10 @@ jobs:
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows' && matrix.arch != 'arm64'
-        run: |
-          choco install mingw
-          choco install gcc-arm
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: ${{ matrix.arch == 'arm64' && 'mingw-w64-x86_64-arm-none-eabi-gcc' || 'mingw-w64-x86_64-gcc' }} make
 
       - name: Install dependencies (MacOS)
         if: runner.os == 'macOS'
@@ -50,14 +51,20 @@ jobs:
           CGO_ENABLED: 1
           GOOS: ${{ runner.os == 'Windows' && 'windows' || runner.os == 'Linux' && 'linux' || 'darwin' }}
           GOARCH: ${{ matrix.arch }}
-          CC: ${{ runner.os == 'macOS' && 'clang' || (runner.os == 'Linux' && matrix.arch == 'arm64') && 'aarch64-linux-gnu-gcc' || (runner.os == 'Windows' && matrix.arch == 'arm64') && 'arm-none-eabi-gcc' || 'gcc' }}
-        shell: pwsh
+          CC: ${{ runner.os == 'macOS' && 'clang' || (runner.os == 'Linux' && matrix.arch == 'arm64') && 'aarch64-linux-gnu-gcc' || (runner.os == 'Windows' && matrix.arch == 'arm64') && 'c:/msys64/mingw64/bin/arm-none-eabi-gcc' || 'gcc' }}
         run: |
-          if ($env:runner_os -eq "Windows") {
-            go build -o "nostr-relay-${{ runner.os }}-${{ matrix.arch }}.exe"
-          } else {
-            go build -o "nostr-relay-${{ runner.os }}-${{ matrix.arch }}"
-          }
+          go build -o "nostr-relay-${{ runner.os }}-${{ matrix.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}"
+
+      #- name: Build (Windows arm64)
+      #  if: ${{ matrix.os == 'windows-latest' && matrix.arch == 'arm64' }}
+      #  env:
+      #    CGO_ENABLED: 1
+      #    GOOS: windows
+      #    GOARCH: ${{ matrix.arch }}
+      #    CC: arm-none-eabi-gcc
+      #  shell: msys2 {0}
+      #  run: |
+      #    go build -v -o nostr-relay-windows-arm64.exe
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
