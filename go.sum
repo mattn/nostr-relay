@@ -26,8 +26,8 @@ github.com/fasthttp/websocket v1.5.12 h1:e4RGPpWW2HTbL3zV0Y/t7g0ub294LkiuXXUuTOU
 github.com/fasthttp/websocket v1.5.12/go.mod h1:I+liyL7/4moHojiOgUOIKEWm9EIxHqxZChS+aMFltyg=
 github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
-github.com/fiatjaf/eventstore v0.16.0 h1:r26aJeOwJTCbEevU8RVqp9FlcAgzKKqUWFH//x+Y+7M=
-github.com/fiatjaf/eventstore v0.16.0/go.mod h1:KAsld5BhkmSck48aF11Txu8X+OGNmoabw4TlYVWqInc=
+github.com/fiatjaf/eventstore v0.16.3 h1:rMirpYvBAgzjH7dDdNQLrSpopItJ8qtzmPXRzAsnbNQ=
+github.com/fiatjaf/eventstore v0.16.3/go.mod h1:54G/+LGK4sW66USTB5+HDMB+GdDgQ705GZSt5MwBwL4=
 github.com/fiatjaf/relayer/v2 v2.2.2 h1:JZhFdFLtQAVWspUEp5FHP2HCk6unJoue8eBlGgIc9uI=
 github.com/fiatjaf/relayer/v2 v2.2.2/go.mod h1:JGecfj+NKIZLYWnSxus0ss156YQNMDX7p44DLBY/W0I=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
