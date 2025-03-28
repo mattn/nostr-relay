@@ -40,6 +40,7 @@ var (
 	_ relayer.ReqAccepter   = (*Relay)(nil)
 	_ relayer.Informationer = (*Relay)(nil)
 	_ relayer.Logger        = (*Relay)(nil)
+	_ relayer.Auther        = (*Relay)(nil)
 
 	//go:embed static
 	assets embed.FS
@@ -52,9 +53,10 @@ type Relay struct {
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
 
-	mu        sync.Mutex
-	allowlist []string
-	blocklist []string
+	serviceURL string
+	mu         sync.Mutex
+	allowlist  []string
+	blocklist  []string
 }
 
 func (r *Relay) Name() string {
@@ -76,6 +78,10 @@ func (r *Relay) DB() *sqlx.DB {
 	}
 }
 
+func (r *Relay) ServiceURL() string {
+	return r.serviceURL
+}
+
 func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 	switch r.driverName {
 	case "sqlite3":
@@ -95,18 +101,18 @@ func (r *Relay) Init() error {
 	return nil
 }
 
-func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
+func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string) {
 	if evt.CreatedAt > nostr.Now()+30*60 {
-		return false
+		return false, ""
 	}
 
 	if nip70.IsProtected(evt) {
 		pubkey, ok := relayer.GetAuthStatus(ctx)
 		if !ok {
-			return false
+			return false, "auth-required: need to authenticate"
 		}
 		if evt.PubKey != pubkey {
-			return false
+			return false, "auth-required: need to authenticate"
 		}
 	}
 
@@ -114,22 +120,22 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	defer r.mu.Unlock()
 	for _, b := range r.blocklist {
 		if evt.PubKey == b {
-			return false
+			return false, ""
 		}
 	}
 	if len(r.allowlist) > 0 {
 		for _, a := range r.allowlist {
 			if evt.PubKey != a {
-				return false
+				return false, ""
 			}
 		}
 	}
 	if len(evt.Content) > relayLimitationDocument.MaxContentLength {
-		return false
+		return false, ""
 	}
 
 	slog.Debug("AcceptEvent", "event", []any{"EVENT", evt})
-	return true
+	return true, ""
 }
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
@@ -308,6 +314,7 @@ func main() {
 	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
 	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql/opensearch)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
+	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 
