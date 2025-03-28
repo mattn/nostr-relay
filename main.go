@@ -166,7 +166,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Description:    "relay powered by the relayer framework",
 		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
 		Contact:        "mattn.jp@gmail.com",
-		SupportedNIPs:  []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50},
+		SupportedNIPs:  []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 70},
 		Software:       "https://github.com/mattn/nostr-relay",
 		Icon:           "https://mattn.github.io/assets/image/mattn-mohawk.webp",
 		Version:        version,
