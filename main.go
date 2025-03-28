@@ -26,6 +26,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
+	"github.com/nbd-wtf/go-nostr/nip70"
 )
 
 const name = "nostr-relay"
@@ -98,6 +99,17 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) bool {
 	if evt.CreatedAt > nostr.Now()+30*60 {
 		return false
 	}
+
+	if nip70.IsProtected(evt) {
+		pubkey, ok := relayer.GetAuthStatus(ctx)
+		if !ok {
+			return false
+		}
+		if evt.PubKey != pubkey {
+			return false
+		}
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for _, b := range r.blocklist {
