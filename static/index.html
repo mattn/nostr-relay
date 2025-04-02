@@ -8,20 +8,10 @@ body {
   text-align: center;
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@nikolat/makibishi@0.1.6"></script>
+<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@nikolat/makibishi@0.2.0"></script>
 <h1>nostr-relay</h1>
 <p><a href="https://github.com/mattn/nostr-relay">https://github.com/mattn/nostr-relay</a></p>
 <p>
-<span
-  class="makibishi"
-  data-relays="wss://relay.nostr.band,wss://nos.lol,wss://relay.damus.io,wss://yabu.me,wss,wss://nostr.compile-error.net"
-  data-url="https://nostr.compile-error.net/"
-  data-content="🤙"
-  data-allow-anonymous-reaction="true"
-></span>
+<span id="makibishi"></span>
 </p>
-<script>
-document.querySelectorAll('.makibishi').forEach((x) => {
-  x.setAttribute("data-url", location.href)
-})
-</script>
