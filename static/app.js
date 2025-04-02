@@ -1,6 +1,6 @@
 globalThis.addEventListener('DOMContentLoaded', () => {
   const u = new URL(location.href)
-  const relayName = u.protocol === 'https' ? 'wss' : 'ws' + '://' + u.host + u.pathname.replace(/\/$/, '')
+  const relayName = u.protocol.replace(/^http/, 'ws') + '//' + u.host + u.pathname.replace(/\/$/, '')
   document.querySelector('#relay-name').textContent = relayName
   const m = document.querySelector('#makibishi')
   m.setAttribute('data-content', '🤙')
