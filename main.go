@@ -106,7 +106,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		return false, ""
 	}
 
-	if nip70.IsProtected(evt) {
+	if nip70.IsProtected(*evt) {
 		pubkey, ok := relayer.GetAuthStatus(ctx)
 		if !ok {
 			return false, "auth-required: need to authenticate"
@@ -139,8 +139,8 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 }
 
 func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
-	if len(filters) > relayLimitationDocument.MaxFilters {
-		slog.Debug("AcceptReq", "limit", fmt.Sprintf("filters is limited as %d (but %d)", relayLimitationDocument.MaxFilters, len(filters)))
+	if len(filters) > 200 {
+		slog.Debug("AcceptReq", "limit", fmt.Sprintf("filters is limited as %d (but %d)", 200, len(filters)))
 		return false
 	}
 	slog.Debug("AcceptReq", "req", []any{"REQ", id, filters})
@@ -150,7 +150,6 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 var relayLimitationDocument = &nip11.RelayLimitationDocument{
 	MaxMessageLength: 524288,
 	MaxSubscriptions: 20,    //
-	MaxFilters:       30,    //
 	MaxLimit:         500,   //
 	MaxSubidLength:   100,   //
 	MaxEventTags:     100,   //
