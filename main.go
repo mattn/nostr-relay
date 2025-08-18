@@ -240,43 +240,53 @@ func (r *Relay) reload() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	rows, err := db.Query(`
+	blocklistRows, err := db.Query(`
     SELECT pubkey FROM blocklist
     `)
 	if err != nil {
-		log.Printf("failed to create server: %v", err)
+		log.Printf("failed to query blocklist: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer blocklistRows.Close()
 
-	r.blocklist = []string{}
-	for rows.Next() {
+	blocklist := []string{}
+	for blocklistRows.Next() {
 		var pubkey string
-		err := rows.Scan(&pubkey)
-		if err != nil {
+		if err := blocklistRows.Scan(&pubkey); err != nil {
+			log.Printf("failed to scan blocklist: %v", err)
 			return
 		}
-		r.blocklist = append(r.blocklist, pubkey)
+		blocklist = append(blocklist, pubkey)
 	}
+	if err := blocklistRows.Err(); err != nil {
+		log.Printf("failed to read blocklist: %v", err)
+		return
+	}
+	r.blocklist = blocklist
 
-	rows, err = db.Query(`
+	allowlistRows, err := db.Query(`
     SELECT pubkey FROM allowlist
     `)
 	if err != nil {
-		log.Printf("failed to create server: %v", err)
+		log.Printf("failed to query allowlist: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer allowlistRows.Close()
 
-	r.allowlist = []string{}
-	for rows.Next() {
+	allowlist := []string{}
+	for allowlistRows.Next() {
 		var pubkey string
-		err := rows.Scan(&pubkey)
-		if err != nil {
+		if err := allowlistRows.Scan(&pubkey); err != nil {
+			log.Printf("failed to scan allowlist: %v", err)
 			return
 		}
-		r.allowlist = append(r.allowlist, pubkey)
+		allowlist = append(allowlist, pubkey)
 	}
+	if err := allowlistRows.Err(); err != nil {
+		log.Printf("failed to read allowlist: %v", err)
+		return
+	}
+	r.allowlist = allowlist
 }
 
 func envDef(name, def string) string {
