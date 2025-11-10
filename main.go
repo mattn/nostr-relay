@@ -116,6 +116,13 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		}
 	}
 
+	// NIP-65: Relay List Metadata validation
+	if evt.Kind == 10002 {
+		if !validateRelayListMetadata(evt) {
+			return false, "invalid: malformed relay list metadata"
+		}
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	for _, b := range r.blocklist {
@@ -165,7 +172,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Description:    "relay powered by the relayer framework",
 		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
 		Contact:        "mattn.jp@gmail.com",
-		SupportedNIPs:  []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 70},
+		SupportedNIPs:  []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 65, 70},
 		Software:       "https://github.com/mattn/nostr-relay",
 		Icon:           "https://mattn.github.io/assets/image/mattn-mohawk.webp",
 		Version:        version,
@@ -186,6 +193,30 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		log.Fatalf("failed to read from env: %v", err)
 	}
 	return info
+}
+
+// validateRelayListMetadata validates NIP-65 relay list metadata
+func validateRelayListMetadata(evt *nostr.Event) bool {
+	// Kind 10002 events should have empty content
+	if evt.Content != "" {
+		return false
+	}
+
+	// Validate relay tags
+	for _, tag := range evt.Tags {
+		if len(tag) >= 2 && tag[0] == "r" {
+			// Basic URL validation for relay tag
+			relayURL := tag[1]
+			if relayURL == "" {
+				return false
+			}
+			// Optional: validate URL format
+			if len(relayURL) < 6 || (relayURL[:6] != "wss://" && relayURL[:5] != "ws://") {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (r *Relay) Infof(format string, v ...any) {
