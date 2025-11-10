@@ -42,6 +42,8 @@ var (
 	_ relayer.Logger        = (*Relay)(nil)
 	_ relayer.Auther        = (*Relay)(nil)
 
+	supportedNIPs = []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 65, 70}
+
 	//go:embed static
 	assets embed.FS
 )
@@ -172,7 +174,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Description:    "relay powered by the relayer framework",
 		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
 		Contact:        "mattn.jp@gmail.com",
-		SupportedNIPs:  []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 65, 70},
+		SupportedNIPs:  supportedNIPs,
 		Software:       "https://github.com/mattn/nostr-relay",
 		Icon:           "https://mattn.github.io/assets/image/mattn-mohawk.webp",
 		Version:        version,
@@ -232,9 +234,10 @@ func (r *Relay) Errorf(format string, v ...any) {
 }
 
 type Info struct {
-	Version     string `json:"version"`
-	NumEvents   int64  `json:"num_events"`
-	NumSessions int64  `json:"num_sessions"`
+	Version       string `json:"version"`
+	NumEvents     int64  `json:"num_events"`
+	NumSessions   int64  `json:"num_sessions"`
+	SupportedNIPs []any  `json:"supported_nips"`
 }
 
 func (r *Relay) ready() {
@@ -420,7 +423,8 @@ func main() {
 	server.Router().HandleFunc("/info", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Add("content-type", "application/json")
 		info := Info{
-			Version: version,
+			Version:       version,
+			SupportedNIPs: supportedNIPs,
 		}
 		if db := r.DB(); db != nil {
 			if err := db.QueryRow("select count(*) from event").Scan(&info.NumEvents); err != nil {
