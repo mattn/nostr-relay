@@ -19,3 +19,4 @@ scripts/
 *.log
 bk/
 tool/
+.aider*
