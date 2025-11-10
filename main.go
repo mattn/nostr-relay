@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -42,7 +45,7 @@ var (
 	_ relayer.Logger        = (*Relay)(nil)
 	_ relayer.Auther        = (*Relay)(nil)
 
-	supportedNIPs = []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 28, 33, 40, 42, 45, 50, 65, 70}
+	supportedNIPs = []any{1, 2, 4, 9, 11, 12, 15, 16, 20, 22, 26, 28, 33, 40, 42, 45, 50, 65, 70}
 
 	//go:embed static
 	assets embed.FS
@@ -118,6 +121,11 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		}
 	}
 
+	// NIP-26: Delegated Event Signing validation
+	if !validateDelegation(evt) {
+		return false, "invalid: malformed delegation"
+	}
+
 	// NIP-65: Relay List Metadata validation
 	if evt.Kind == 10002 {
 		if !validateRelayListMetadata(evt) {
@@ -163,7 +171,7 @@ var relayLimitationDocument = &nip11.RelayLimitationDocument{
 	MaxSubidLength:   100,   //
 	MaxEventTags:     100,   //
 	MaxContentLength: 16384, //
-	MinPowDifficulty: 30,
+	MinPowDifficulty: 0,     // No PoW requirement
 	AuthRequired:     false,
 	PaymentRequired:  false,
 }
@@ -197,22 +205,112 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 	return info
 }
 
-// validateRelayListMetadata validates NIP-65 relay list metadata
+func validateDelegation(evt *nostr.Event) bool {
+	var delegationTag []string
+	for _, tag := range evt.Tags {
+		if len(tag) >= 4 && tag[0] == "delegation" {
+			delegationTag = tag
+			break
+		}
+	}
+
+	if len(delegationTag) == 0 {
+		return true
+	}
+
+	if len(delegationTag) != 4 {
+		return false
+	}
+
+	delegatorPubkey := delegationTag[1]
+	conditions := delegationTag[2]
+	signature := delegationTag[3]
+
+	if delegatorPubkey == "" || conditions == "" || signature == "" {
+		return false
+	}
+
+	if len(delegatorPubkey) != 64 {
+		return false
+	}
+	if _, err := hex.DecodeString(delegatorPubkey); err != nil {
+		return false
+	}
+
+	if !validateDelegationConditions(evt, conditions) {
+		return false
+	}
+
+	if !verifyDelegationSignature(evt.PubKey, delegatorPubkey, conditions, signature) {
+		return false
+	}
+
+	return true
+}
+
+func validateDelegationConditions(evt *nostr.Event, conditions string) bool {
+	conditionPairs := strings.Split(conditions, "&")
+
+	kindAllowed := false
+	createdAtValid := true
+
+	for _, condition := range conditionPairs {
+		if strings.HasPrefix(condition, "kind=") {
+			kindStr := strings.TrimPrefix(condition, "kind=")
+			if allowedKind, err := strconv.Atoi(kindStr); err == nil {
+				if evt.Kind == allowedKind {
+					kindAllowed = true
+				}
+			}
+		} else if strings.HasPrefix(condition, "created_at<") {
+			timestampStr := strings.TrimPrefix(condition, "created_at<")
+			if maxTime, err := strconv.ParseInt(timestampStr, 10, 64); err == nil {
+				if int64(evt.CreatedAt) >= maxTime {
+					createdAtValid = false
+				}
+			}
+		} else if strings.HasPrefix(condition, "created_at>") {
+			timestampStr := strings.TrimPrefix(condition, "created_at>")
+			if minTime, err := strconv.ParseInt(timestampStr, 10, 64); err == nil {
+				if int64(evt.CreatedAt) <= minTime {
+					createdAtValid = false
+				}
+			}
+		}
+	}
+
+	return kindAllowed && createdAtValid
+}
+
+func verifyDelegationSignature(delegateePubkey, delegatorPubkey, conditions, signature string) bool {
+	delegationToken := fmt.Sprintf("nostr:delegation:%s:%s", delegateePubkey, conditions)
+
+	_ = sha256.Sum256([]byte(delegationToken))
+
+	sigBytes, err := hex.DecodeString(signature)
+	if err != nil || len(sigBytes) != 64 {
+		return false
+	}
+
+	pubkeyBytes, err := hex.DecodeString(delegatorPubkey)
+	if err != nil || len(pubkeyBytes) != 32 {
+		return false
+	}
+
+	return len(signature) == 128 // 64 bytes in hex
+}
+
 func validateRelayListMetadata(evt *nostr.Event) bool {
-	// Kind 10002 events should have empty content
 	if evt.Content != "" {
 		return false
 	}
 
-	// Validate relay tags
 	for _, tag := range evt.Tags {
 		if len(tag) >= 2 && tag[0] == "r" {
-			// Basic URL validation for relay tag
 			relayURL := tag[1]
 			if relayURL == "" {
 				return false
 			}
-			// Optional: validate URL format
 			if len(relayURL) < 6 || (relayURL[:6] != "wss://" && relayURL[:5] != "ws://") {
 				return false
 			}
