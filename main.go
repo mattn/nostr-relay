@@ -184,7 +184,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Contact:        "mattn.jp@gmail.com",
 		SupportedNIPs:  supportedNIPs,
 		Software:       "https://github.com/mattn/nostr-relay",
-		Icon:           "https://mattn.github.io/assets/image/mattn-mohawk.webp",
+		Icon:           "https://nostr.compile-error.net/logo.png",
 		Version:        version,
 		Limitation:     relayLimitationDocument,
 		RelayCountries: []string{},
