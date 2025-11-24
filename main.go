@@ -155,7 +155,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	return true, ""
 }
 
-func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auto string) bool {
+func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters, auth string) bool {
 	if len(filters) > 200 {
 		slog.Debug("AcceptReq", "limit", fmt.Sprintf("filters is limited as %d (but %d)", 200, len(filters)))
 		return false
