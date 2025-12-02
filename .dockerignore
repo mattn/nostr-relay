@@ -7,4 +7,5 @@ nostr-relay.sqlite-shm
 nostr-relay.sqlite-wal
 scripts/
 update.sh
-
+.aider*
+.crush
