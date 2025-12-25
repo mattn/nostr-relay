@@ -3,7 +3,7 @@ module github.com/mattn/nostr-relay
 go 1.25.0
 
 require (
-	github.com/fiatjaf/eventstore v0.17.2
+	github.com/fiatjaf/eventstore v0.17.3
 	github.com/fiatjaf/relayer/v2 v2.2.7
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -38,7 +38,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/opensearch-project/opensearch-go/v4 v4.5.0 // indirect
+	github.com/opensearch-project/opensearch-go/v4 v4.6.0 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
@@ -49,9 +49,9 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.68.0 // indirect
 	golang.org/x/arch v0.23.0 // indirect
-	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93 // indirect
+	golang.org/x/net v0.48.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 )
 
