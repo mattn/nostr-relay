@@ -57,6 +57,9 @@ type Relay struct {
 	postgresStorage   *postgresql.PostgresBackend
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
+	wrappedStore      *eventstore.RelayWrapper
+	customSearchURL   string
+	initStoreOnce     sync.Once
 
 	serviceURL string
 	mu         sync.Mutex
@@ -88,18 +91,57 @@ func (r *Relay) ServiceURL() string {
 }
 
 func (r *Relay) Storage(ctx context.Context) eventstore.Store {
-	switch r.driverName {
-	case "sqlite3":
-		return r.sqlite3Storage
-	case "postgresql":
-		return r.postgresStorage
-	case "mysql":
-		return r.mysqlStorage
-	case "opensearch":
-		return r.opensearchStorage
-	default:
-		panic("unsupported backend driver")
+	r.initStoreOnce.Do(func() {
+		var baseStore eventstore.Store
+		switch r.driverName {
+		case "sqlite3":
+			baseStore = r.sqlite3Storage
+		case "postgresql":
+			baseStore = r.postgresStorage
+		case "mysql":
+			baseStore = r.mysqlStorage
+		case "opensearch":
+			baseStore = r.opensearchStorage
+		default:
+			panic("unsupported backend driver")
+		}
+
+		r.wrappedStore = &eventstore.RelayWrapper{
+			Store: baseStore,
+		}
+
+		if r.customSearchURL != "" {
+			r.wrappedStore.QueryCustomSearch = r.performCustomSearch
+		}
+	})
+	return r.wrappedStore
+}
+
+func (r *Relay) performCustomSearch(ctx context.Context, search string, filter nostr.Filter) (chan *nostr.Event, error) {
+	req, err := http.NewRequest("POST", r.customSearchURL, strings.NewReader(search))
+	if err != nil {
+		return nil, err
 	}
+	req.Header.Set("Content-Type", "text/plain")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	ch := make(chan *nostr.Event)
+	go func() {
+		defer close(ch)
+		dec := json.NewDecoder(resp.Body)
+		for dec.More() {
+			var evt nostr.Event
+			if err := dec.Decode(&evt); err != nil {
+				return
+			}
+			ch <- &evt
+		}
+	}()
+	return ch, nil
 }
 
 func (r *Relay) Init() error {
@@ -446,6 +488,7 @@ func main() {
 	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql/opensearch)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
 	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
+	flag.StringVar(&r.customSearchURL, "custom-search", envDef("CUSTOM_SEARCH_URL", ""), "custom search URL for NIP-50")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 
