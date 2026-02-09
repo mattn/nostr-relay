@@ -110,9 +110,9 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 			Store: baseStore,
 		}
 
-		if r.customSearchURL != "" {
-			r.wrappedStore.QueryCustomSearch = r.performCustomSearch
-		}
+		//if r.customSearchURL != "" {
+		//	r.wrappedStore.QueryCustomSearch = r.performCustomSearch
+		//}
 	})
 	return r.wrappedStore
 }
