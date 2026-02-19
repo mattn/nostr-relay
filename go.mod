@@ -12,7 +12,7 @@ require (
 
 require (
 	fiatjaf.com/lib v0.3.2 // indirect
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/aquasecurity/esquery v0.2.0 // indirect
