@@ -1,6 +1,6 @@
 module github.com/mattn/nostr-relay
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/fiatjaf/eventstore v0.17.5

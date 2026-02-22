@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -177,10 +178,8 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	for _, b := range r.blocklist {
-		if evt.PubKey == b {
-			return false, ""
-		}
+	if slices.Contains(r.blocklist, evt.PubKey) {
+		return false, ""
 	}
 	if len(r.allowlist) > 0 {
 		for _, a := range r.allowlist {
@@ -297,22 +296,22 @@ func validateDelegationConditions(evt *nostr.Event, conditions string) bool {
 	createdAtValid := true
 
 	for _, condition := range conditionPairs {
-		if strings.HasPrefix(condition, "kind=") {
-			kindStr := strings.TrimPrefix(condition, "kind=")
+		if after, ok := strings.CutPrefix(condition, "kind="); ok {
+			kindStr := after
 			if allowedKind, err := strconv.Atoi(kindStr); err == nil {
 				if evt.Kind == allowedKind {
 					kindAllowed = true
 				}
 			}
-		} else if strings.HasPrefix(condition, "created_at<") {
-			timestampStr := strings.TrimPrefix(condition, "created_at<")
+		} else if after, ok := strings.CutPrefix(condition, "created_at<"); ok {
+			timestampStr := after
 			if maxTime, err := strconv.ParseInt(timestampStr, 10, 64); err == nil {
 				if int64(evt.CreatedAt) >= maxTime {
 					createdAtValid = false
 				}
 			}
-		} else if strings.HasPrefix(condition, "created_at>") {
-			timestampStr := strings.TrimPrefix(condition, "created_at>")
+		} else if after, ok := strings.CutPrefix(condition, "created_at>"); ok {
+			timestampStr := after
 			if minTime, err := strconv.ParseInt(timestampStr, 10, 64); err == nil {
 				if int64(evt.CreatedAt) <= minTime {
 					createdAtValid = false
