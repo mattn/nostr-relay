@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"slices"
 	"strings"
@@ -186,14 +187,10 @@ func (r *Relay) AfterSave(evt *nostr.Event) {
 		return
 	}
 
-	webhookURL := os.Getenv("REPORT_WEBHOOK_URL")
-	if webhookURL == "" {
+	pushoverToken := os.Getenv("PUSHOVER_TOKEN")
+	pushoverUser := os.Getenv("PUSHOVER_USER")
+	if pushoverToken == "" || pushoverUser == "" {
 		return
-	}
-	webhookBody := os.Getenv("REPORT_WEBHOOK_BODY")
-	webhookContentType := os.Getenv("REPORT_WEBHOOK_CONTENT_TYPE")
-	if webhookContentType == "" {
-		webhookContentType = "application/x-www-form-urlencoded"
 	}
 
 	var reportedPubkey, reportedEvent, reportType string
@@ -214,24 +211,23 @@ func (r *Relay) AfterSave(evt *nostr.Event) {
 		}
 	}
 
-	replacer := strings.NewReplacer(
-		"{reporter}", evt.PubKey,
-		"{reported_pubkey}", reportedPubkey,
-		"{reported_event}", reportedEvent,
-		"{report_type}", reportType,
-		"{content}", evt.Content,
-		"{event_id}", evt.ID,
-	)
-	body := replacer.Replace(webhookBody)
+	message := fmt.Sprintf("Reporter: %s\nType: %s\nPubkey: %s\nEvent: %s\n%s",
+		evt.PubKey, reportType, reportedPubkey, reportedEvent, evt.Content)
 
 	go func() {
-		resp, err := http.Post(webhookURL, webhookContentType, strings.NewReader(body))
+		form := url.Values{}
+		form.Set("token", pushoverToken)
+		form.Set("user", pushoverUser)
+		form.Set("title", "Nostr Report (kind 1984)")
+		form.Set("message", message)
+
+		resp, err := http.PostForm("https://api.pushover.net/1/messages.json", form)
 		if err != nil {
-			slog.Error("failed to send report webhook", "error", err)
+			slog.Error("failed to send pushover notification", "error", err)
 			return
 		}
 		resp.Body.Close()
-		slog.Info("report webhook sent", "status", resp.StatusCode, "reporter", evt.PubKey)
+		slog.Info("pushover notification sent", "status", resp.StatusCode, "reporter", evt.PubKey)
 	}()
 }
 
