@@ -32,7 +32,7 @@ type Relay struct {
 	postgresStorage   *postgresql.PostgresBackend
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
-	wrappedStore      *eventstore.RelayWrapper
+	storeWithHooks    *relayStore
 	customSearchURL   string
 	initStoreOnce     sync.Once
 
@@ -81,15 +81,66 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 			panic("unsupported backend driver")
 		}
 
-		r.wrappedStore = &eventstore.RelayWrapper{
-			Store: baseStore,
-		}
-
-		//if r.customSearchURL != "" {
-		//	r.wrappedStore.QueryCustomSearch = r.performCustomSearch
-		//}
+		r.storeWithHooks = &relayStore{Store: baseStore}
 	})
-	return r.wrappedStore
+	return r.storeWithHooks
+}
+
+// relayStore wraps eventstore.Store and implements AdvancedSaver with pushover notification.
+type relayStore struct {
+	eventstore.Store
+}
+
+func (s *relayStore) BeforeSave(ctx context.Context, evt *nostr.Event) {}
+
+func (s *relayStore) AfterSave(evt *nostr.Event) {
+	// NIP-56: Reporting (kind 1984)
+	if evt.Kind != 1984 {
+		return
+	}
+
+	pushoverToken := os.Getenv("PUSHOVER_TOKEN")
+	pushoverUser := os.Getenv("PUSHOVER_USER")
+	if pushoverToken == "" || pushoverUser == "" {
+		return
+	}
+
+	var reportedPubkey, reportedEvent, reportType string
+	for _, tag := range evt.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "p":
+				reportedPubkey = tag[1]
+				if len(tag) >= 3 {
+					reportType = tag[2]
+				}
+			case "e":
+				reportedEvent = tag[1]
+				if len(tag) >= 3 {
+					reportType = tag[2]
+				}
+			}
+		}
+	}
+
+	message := fmt.Sprintf("Reporter: %s\nType: %s\nPubkey: %s\nEvent: %s\n%s",
+		evt.PubKey, reportType, reportedPubkey, reportedEvent, evt.Content)
+
+	go func() {
+		form := url.Values{}
+		form.Set("token", pushoverToken)
+		form.Set("user", pushoverUser)
+		form.Set("title", "Nostr Report (kind 1984)")
+		form.Set("message", message)
+
+		resp, err := http.PostForm("https://api.pushover.net/1/messages.json", form)
+		if err != nil {
+			slog.Error("failed to send pushover notification", "error", err)
+			return
+		}
+		resp.Body.Close()
+		slog.Info("pushover notification sent", "status", resp.StatusCode, "reporter", evt.PubKey)
+	}()
 }
 
 func (r *Relay) performCustomSearch(ctx context.Context, search string, filter nostr.Filter) (chan *nostr.Event, error) {
@@ -177,58 +228,6 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 	}
 	slog.Debug("AcceptReq", "req", []any{"REQ", id, filters})
 	return true
-}
-
-func (r *Relay) BeforeSave(ctx context.Context, evt *nostr.Event) {}
-
-func (r *Relay) AfterSave(evt *nostr.Event) {
-	// NIP-56: Reporting (kind 1984)
-	if evt.Kind != 1984 {
-		return
-	}
-
-	pushoverToken := os.Getenv("PUSHOVER_TOKEN")
-	pushoverUser := os.Getenv("PUSHOVER_USER")
-	if pushoverToken == "" || pushoverUser == "" {
-		return
-	}
-
-	var reportedPubkey, reportedEvent, reportType string
-	for _, tag := range evt.Tags {
-		if len(tag) >= 2 {
-			switch tag[0] {
-			case "p":
-				reportedPubkey = tag[1]
-				if len(tag) >= 3 {
-					reportType = tag[2]
-				}
-			case "e":
-				reportedEvent = tag[1]
-				if len(tag) >= 3 {
-					reportType = tag[2]
-				}
-			}
-		}
-	}
-
-	message := fmt.Sprintf("Reporter: %s\nType: %s\nPubkey: %s\nEvent: %s\n%s",
-		evt.PubKey, reportType, reportedPubkey, reportedEvent, evt.Content)
-
-	go func() {
-		form := url.Values{}
-		form.Set("token", pushoverToken)
-		form.Set("user", pushoverUser)
-		form.Set("title", "Nostr Report (kind 1984)")
-		form.Set("message", message)
-
-		resp, err := http.PostForm("https://api.pushover.net/1/messages.json", form)
-		if err != nil {
-			slog.Error("failed to send pushover notification", "error", err)
-			return
-		}
-		resp.Body.Close()
-		slog.Info("pushover notification sent", "status", resp.StatusCode, "reporter", evt.PubKey)
-	}()
 }
 
 var relayLimitationDocument = &nip11.RelayLimitationDocument{
