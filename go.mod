@@ -4,14 +4,14 @@ go 1.26.0
 
 require (
 	github.com/fiatjaf/eventstore v0.17.5
-	github.com/fiatjaf/relayer/v2 v2.2.7
+	github.com/fiatjaf/relayer/v2 v2.2.8
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nbd-wtf/go-nostr v0.52.3
 )
 
 require (
-	fiatjaf.com/lib v0.3.2 // indirect
+	fiatjaf.com/lib v0.3.6 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
@@ -50,7 +50,7 @@ require (
 	github.com/valyala/fasthttp v1.69.0 // indirect
 	golang.org/x/arch v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 )
