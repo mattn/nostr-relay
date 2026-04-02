@@ -20,4 +20,6 @@ scripts/
 bk/
 tool/
 .aider*
+.claude
+.codex
 nip*.md
