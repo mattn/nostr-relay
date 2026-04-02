@@ -11,6 +11,28 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
+func TestAcceptEventAllowlistMatchesAnyEntry(t *testing.T) {
+	r := &Relay{
+		allowlist: []string{"allowed", "other"},
+	}
+
+	accepted, _ := r.AcceptEvent(t.Context(), &nostr.Event{
+		PubKey:    "allowed",
+		CreatedAt: nostr.Now(),
+	})
+	if !accepted {
+		t.Fatal("expected allowlisted pubkey to be accepted")
+	}
+
+	rejected, _ := r.AcceptEvent(t.Context(), &nostr.Event{
+		PubKey:    "blocked",
+		CreatedAt: nostr.Now(),
+	})
+	if rejected {
+		t.Fatal("expected non-allowlisted pubkey to be rejected")
+	}
+}
+
 func TestValidateDelegationRejectsForgedSignature(t *testing.T) {
 	delegateeSecret := bytes32Hex(0x11)
 	delegatorSecret := bytes32Hex(0x22)

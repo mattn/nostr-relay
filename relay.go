@@ -206,12 +206,8 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	if slices.Contains(r.blocklist, evt.PubKey) {
 		return false, ""
 	}
-	if len(r.allowlist) > 0 {
-		for _, a := range r.allowlist {
-			if evt.PubKey != a {
-				return false, ""
-			}
-		}
+	if len(r.allowlist) > 0 && !slices.Contains(r.allowlist, evt.PubKey) {
+		return false, ""
 	}
 	if len(evt.Content) > relayLimitationDocument.MaxContentLength {
 		return false, ""
