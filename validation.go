@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 	"github.com/nbd-wtf/go-nostr"
 )
 
@@ -90,10 +91,14 @@ func validateDelegationConditions(evt *nostr.Event, conditions string) bool {
 func verifyDelegationSignature(delegateePubkey, delegatorPubkey, conditions, signature string) bool {
 	delegationToken := fmt.Sprintf("nostr:delegation:%s:%s", delegateePubkey, conditions)
 
-	_ = sha256.Sum256([]byte(delegationToken))
+	hash := sha256.Sum256([]byte(delegationToken))
 
 	sigBytes, err := hex.DecodeString(signature)
 	if err != nil || len(sigBytes) != 64 {
+		return false
+	}
+	sig, err := schnorr.ParseSignature(sigBytes)
+	if err != nil {
 		return false
 	}
 
@@ -101,8 +106,12 @@ func verifyDelegationSignature(delegateePubkey, delegatorPubkey, conditions, sig
 	if err != nil || len(pubkeyBytes) != 32 {
 		return false
 	}
+	pubkey, err := schnorr.ParsePubKey(pubkeyBytes)
+	if err != nil {
+		return false
+	}
 
-	return len(signature) == 128 // 64 bytes in hex
+	return sig.Verify(hash[:], pubkey)
 }
 
 func validateRelayListMetadata(evt *nostr.Event) bool {
