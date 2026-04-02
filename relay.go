@@ -153,11 +153,11 @@ func (r *Relay) performCustomSearch(ctx context.Context, search string, filter n
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	ch := make(chan *nostr.Event)
 	go func() {
 		defer close(ch)
+		defer resp.Body.Close()
 		dec := json.NewDecoder(resp.Body)
 		for dec.More() {
 			var evt nostr.Event

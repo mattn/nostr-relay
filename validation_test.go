@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -16,7 +19,7 @@ func TestAcceptEventAllowlistMatchesAnyEntry(t *testing.T) {
 		allowlist: []string{"allowed", "other"},
 	}
 
-	accepted, _ := r.AcceptEvent(t.Context(), &nostr.Event{
+	accepted, _ := r.AcceptEvent(context.Background(), &nostr.Event{
 		PubKey:    "allowed",
 		CreatedAt: nostr.Now(),
 	})
@@ -24,12 +27,37 @@ func TestAcceptEventAllowlistMatchesAnyEntry(t *testing.T) {
 		t.Fatal("expected allowlisted pubkey to be accepted")
 	}
 
-	rejected, _ := r.AcceptEvent(t.Context(), &nostr.Event{
+	rejected, _ := r.AcceptEvent(context.Background(), &nostr.Event{
 		PubKey:    "blocked",
 		CreatedAt: nostr.Now(),
 	})
 	if rejected {
 		t.Fatal("expected non-allowlisted pubkey to be rejected")
+	}
+}
+
+func TestPerformCustomSearchStreamsResponse(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Fatalf("unexpected method: %s", r.Method)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"id":"1","pubkey":"p1","created_at":1,"kind":1,"tags":[],"content":"one","sig":"s1"}`)
+	}))
+	defer srv.Close()
+
+	r := &Relay{customSearchURL: srv.URL}
+	ch, err := r.performCustomSearch(context.Background(), "test", nostr.Filter{})
+	if err != nil {
+		t.Fatalf("perform custom search: %v", err)
+	}
+
+	evt, ok := <-ch
+	if !ok {
+		t.Fatal("expected one event from custom search")
+	}
+	if evt.Content != "one" {
+		t.Fatalf("unexpected event content: %q", evt.Content)
 	}
 }
 
