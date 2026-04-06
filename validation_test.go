@@ -15,9 +15,13 @@ import (
 )
 
 func TestAcceptEventAllowlistMatchesAnyEntry(t *testing.T) {
-	r := &Relay{
-		allowlist: []string{"allowed", "other"},
-	}
+	r := &Relay{}
+	r.lists.Store(&relayLists{
+		allowlist: map[string]struct{}{
+			"allowed": {},
+			"other":   {},
+		},
+	})
 
 	accepted, _ := r.AcceptEvent(context.Background(), &nostr.Event{
 		PubKey:    "allowed",
@@ -140,4 +144,27 @@ func bytes64Hex(b byte) string {
 		buf[i] = b
 	}
 	return hex.EncodeToString(buf)
+}
+
+func BenchmarkAcceptEventAllowlist(b *testing.B) {
+	r := &Relay{}
+	r.lists.Store(&relayLists{
+		allowlist: map[string]struct{}{
+			"allowed": {},
+			"other":   {},
+		},
+	})
+
+	evt := &nostr.Event{
+		PubKey:    "allowed",
+		CreatedAt: nostr.Now(),
+	}
+
+	b.ReportAllocs()
+	for b.Loop() {
+		accepted, _ := r.AcceptEvent(context.Background(), evt)
+		if !accepted {
+			b.Fatal("expected event to be accepted")
+		}
+	}
 }

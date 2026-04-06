@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/fiatjaf/eventstore"
 	"github.com/fiatjaf/eventstore/mysql"
@@ -37,9 +37,12 @@ type Relay struct {
 	initStoreOnce     sync.Once
 
 	serviceURL string
-	mu         sync.Mutex
-	allowlist  []string
-	blocklist  []string
+	lists      atomic.Pointer[relayLists]
+}
+
+type relayLists struct {
+	allowlist map[string]struct{}
+	blocklist map[string]struct{}
 }
 
 func (r *Relay) Name() string {
@@ -201,13 +204,14 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		}
 	}
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if slices.Contains(r.blocklist, evt.PubKey) {
+	lists := r.currentLists()
+	if _, blocked := lists.blocklist[evt.PubKey]; blocked {
 		return false, ""
 	}
-	if len(r.allowlist) > 0 && !slices.Contains(r.allowlist, evt.PubKey) {
-		return false, ""
+	if len(lists.allowlist) > 0 {
+		if _, allowed := lists.allowlist[evt.PubKey]; !allowed {
+			return false, ""
+		}
 	}
 	if len(evt.Content) > relayLimitationDocument.MaxContentLength {
 		return false, ""
@@ -317,9 +321,6 @@ func (r *Relay) reload() {
 		return
 	}
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	rows, err := db.Query(`
     SELECT pubkey FROM blocklist
     `)
@@ -329,14 +330,14 @@ func (r *Relay) reload() {
 	}
 	defer rows.Close()
 
-	r.blocklist = []string{}
+	blocklist := make(map[string]struct{})
 	for rows.Next() {
 		var pubkey string
 		err := rows.Scan(&pubkey)
 		if err != nil {
 			return
 		}
-		r.blocklist = append(r.blocklist, pubkey)
+		blocklist[pubkey] = struct{}{}
 	}
 
 	rows, err = db.Query(`
@@ -348,13 +349,25 @@ func (r *Relay) reload() {
 	}
 	defer rows.Close()
 
-	r.allowlist = []string{}
+	allowlist := make(map[string]struct{})
 	for rows.Next() {
 		var pubkey string
 		err := rows.Scan(&pubkey)
 		if err != nil {
 			return
 		}
-		r.allowlist = append(r.allowlist, pubkey)
+		allowlist[pubkey] = struct{}{}
 	}
+
+	r.lists.Store(&relayLists{
+		allowlist: allowlist,
+		blocklist: blocklist,
+	})
+}
+
+func (r *Relay) currentLists() *relayLists {
+	if lists := r.lists.Load(); lists != nil {
+		return lists
+	}
+	return &relayLists{}
 }

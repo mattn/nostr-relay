@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fiatjaf/eventstore/mysql"
@@ -50,9 +51,24 @@ func envDef(name, def string) string {
 }
 
 func init() {
+	level := new(slog.LevelVar)
+	level.Set(parseLogLevel(envDef("LOG_LEVEL", "info")))
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: level,
 	})))
+}
+
+func parseLogLevel(value string) slog.Level {
+	switch strings.ToLower(value) {
+	case "debug":
+		return slog.LevelDebug
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }
 
 func skipEventFunc(ev *nostr.Event) bool {
