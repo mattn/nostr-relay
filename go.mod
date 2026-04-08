@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.6
 	github.com/fiatjaf/eventstore v0.17.5
-	github.com/fiatjaf/relayer/v2 v2.2.8
+	github.com/fiatjaf/relayer/v2 v2.2.9
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nbd-wtf/go-nostr v0.52.3
@@ -35,7 +35,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/mailru/easyjson v0.9.2 // indirect
-	github.com/mattn/go-sqlite3 v1.14.41 // indirect
+	github.com/mattn/go-sqlite3 v1.14.42 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opensearch-project/opensearch-go/v4 v4.6.0 // indirect
@@ -47,11 +47,11 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.69.0 // indirect
+	github.com/valyala/fasthttp v1.70.0 // indirect
 	golang.org/x/arch v0.25.0 // indirect
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/net v0.52.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )
 
