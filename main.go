@@ -125,10 +125,11 @@ func main() {
 		}
 	case "postgresql":
 		r.postgresStorage = &postgresql.PostgresBackend{
-			DatabaseURL:      databaseURL,
-			QueryLimit:       relayLimitationDocument.MaxLimit,
-			QueryTagsLimit:   relayLimitationDocument.MaxEventTags,
-			KeepRecentEvents: true,
+			DatabaseURL:       databaseURL,
+			QueryLimit:        relayLimitationDocument.MaxLimit,
+			QueryTagsLimit:    relayLimitationDocument.MaxEventTags,
+			QueryAuthorsLimit: 1000,
+			KeepRecentEvents:  true,
 		}
 	case "mysql":
 		r.mysqlStorage = &mysql.MySQLBackend{

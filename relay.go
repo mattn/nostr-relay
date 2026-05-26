@@ -280,7 +280,16 @@ func (r *Relay) Warningf(format string, v ...any) {
 }
 
 func (r *Relay) Errorf(format string, v ...any) {
-	slog.Error(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	switch {
+	case strings.Contains(msg, "context canceled"):
+		// client disconnected mid-query — not an error
+		return
+	case strings.Contains(msg, "too many kinds"):
+		slog.Warn(msg)
+		return
+	}
+	slog.Error(msg)
 }
 
 type Info struct {
