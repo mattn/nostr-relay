@@ -253,7 +253,7 @@ func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
 		Icon:           "https://nostr.compile-error.net/logo.png",
 		Version:        version,
 		Limitation:     relayLimitationDocument,
-		RelayCountries: []string{},
+		RelayCountries: []string{"JP"},
 		LanguageTags:   []string{},
 		Tags:           []string{},
 		PostingPolicy:  "",
