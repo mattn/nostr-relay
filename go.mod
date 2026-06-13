@@ -3,7 +3,7 @@ module github.com/mattn/nostr-relay
 go 1.26.0
 
 require (
-	github.com/btcsuite/btcd/btcec/v2 v2.3.6
+	github.com/btcsuite/btcd/btcec/v2 v2.5.0
 	github.com/fiatjaf/eventstore v0.17.5
 	github.com/fiatjaf/relayer/v2 v2.2.10
 	github.com/jmoiron/sqlx v1.4.0
@@ -17,7 +17,7 @@ require (
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/aquasecurity/esquery v0.2.0 // indirect
-	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0 // indirect
+	github.com/btcsuite/btcd/chainhash/v2 v2.0.0 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.1 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
