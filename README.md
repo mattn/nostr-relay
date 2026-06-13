@@ -5,7 +5,25 @@ A [nostr](https://github.com/nostr-protocol/nostr) relay built on the
 storage backends (SQLite, PostgreSQL, MySQL and OpenSearch) and can optionally
 back up its SQLite database with [litestream](https://litestream.io/).
 
-## Build
+## Contents
+
+- [Install](#install)
+- [Configuration](#configuration)
+  - [Command-line flags](#command-line-flags)
+  - [Environment variables](#environment-variables)
+  - [NIP-11 information](#nip-11-information)
+- [Storage backends](#storage-backends)
+- [Deployment](#deployment)
+  - [systemd](#systemd)
+  - [Docker](#docker)
+  - [Docker Compose](#docker-compose)
+  - [Kubernetes](#kubernetes)
+- [License](#license)
+- [Author](#author)
+
+## Install
+
+### From source
 
 ```
 $ go install github.com/mattn/nostr-relay@latest
@@ -17,31 +35,32 @@ Or from a checkout of this repository:
 $ make
 ```
 
-A prebuilt container image is published to the GitHub Container Registry:
+### Container image
+
+A prebuilt image is published to the GitHub Container Registry:
 
 ```
 $ docker pull ghcr.io/mattn/nostr-relay:latest
 ```
 
-## Usage
+## Configuration
 
 ```
 $ nostr-relay [options]
 ```
 
+### Command-line flags
+
 | Flag            | Default          | Description                                            |
 |-----------------|------------------|--------------------------------------------------------|
 | `-addr`         | `0.0.0.0:7447`   | Listen address                                         |
 | `-driver`       | `sqlite3`        | Storage driver: `sqlite3` / `postgresql` / `mysql` / `opensearch` |
-| `-database`     | `nostr-relay.sqlite` | Connection string (see below). Falls back to `$DATABASE_URL` |
+| `-database`     | `nostr-relay.sqlite` | Connection string (see [Storage backends](#storage-backends)). Falls back to `$DATABASE_URL` |
 | `-service-url`  | (empty)          | Public service URL. Falls back to `$SERVICE_URL`       |
 | `-custom-search`| (empty)          | External search endpoint for NIP-50. Falls back to `$CUSTOM_SEARCH_URL` |
 | `-version`      | `false`          | Print the version and exit                             |
 
-## Configuration
-
-In addition to the flags above, the following environment variables are
-recognized:
+### Environment variables
 
 | Variable             | Description                                                        |
 |----------------------|--------------------------------------------------------------------|
@@ -51,9 +70,12 @@ recognized:
 | `LOG_LEVEL`          | `debug` / `info` / `warn` / `error` (default `info`)               |
 | `PUSHOVER_TOKEN`     | Pushover application token; enables NIP-56 (kind 1984) report notifications |
 | `PUSHOVER_USER`      | Pushover user key (required together with `PUSHOVER_TOKEN`)        |
-| `NOSTR_RELAY_*`      | Override NIP-11 relay information, e.g. `NOSTR_RELAY_NAME`, `NOSTR_RELAY_DESCRIPTION`, `NOSTR_RELAY_CONTACT`, `NOSTR_RELAY_PUBKEY` |
+| `NOSTR_RELAY_*`      | Override NIP-11 relay information (see below)                       |
 
-For example, to override the NIP-11 information document:
+### NIP-11 information
+
+Any field of the relay's NIP-11 information document can be overridden with a
+`NOSTR_RELAY_`-prefixed environment variable:
 
 ```
 NOSTR_RELAY_NAME="my relay"
@@ -98,7 +120,9 @@ $ nostr-relay -driver mysql \
 $ nostr-relay -driver opensearch -database "https://localhost:9200"
 ```
 
-## Running as a systemd service
+## Deployment
+
+### systemd
 
 Create a dedicated user and a working directory, then install a unit file at
 `/etc/systemd/system/nostr-relay.service`:
@@ -135,7 +159,7 @@ $ sudo systemctl enable --now nostr-relay
 $ sudo journalctl -u nostr-relay -f
 ```
 
-## Docker
+### Docker
 
 ```
 $ docker run -d --name nostr-relay \
@@ -145,14 +169,19 @@ $ docker run -d --name nostr-relay \
     ghcr.io/mattn/nostr-relay:latest
 ```
 
-A [compose.yaml](./compose.yaml) is also provided that runs the relay together
-with litestream for continuous SQLite backup:
+### Docker Compose
+
+A [compose.yaml](./compose.yaml) is provided that runs the relay together with
+litestream for continuous SQLite backup:
 
 ```
 $ docker compose up -d
 ```
 
-## Kubernetes (with litestream backup)
+### Kubernetes
+
+The [kustomize](./kustomize) manifests deploy the relay with litestream backup
+to S3.
 
 1. Edit litestream.yaml
 
