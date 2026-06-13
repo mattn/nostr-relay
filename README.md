@@ -12,7 +12,7 @@ nostr relay with backup method using litestream.
       - path: /data/nostr-relay.sqlite
         replicas:
           - type: s3
-            endpoint: https://your-s3-endoint
+            endpoint: https://your-s3-endpoint
             name: nostr-relay.sqlite
             bucket: nostr-relay-backup
             path: nostr-relay.sqlite
