@@ -96,6 +96,65 @@ type relayStore struct {
 
 func (s *relayStore) BeforeSave(ctx context.Context, evt *nostr.Event) {}
 
+// sanitizeFilter reconciles empty tag sets, which the underlying backends reject
+// as errors, with go-nostr's Filter.Matches semantics:
+//
+//   - a non-nil but empty value list (e.g. {"#e": []}) can never match any event,
+//     so the filter is unsatisfiable and the caller should return no results;
+//   - a nil value list (e.g. {"#e": null}) is treated as no constraint, so the tag
+//     entry is dropped before the filter reaches the backend (which would otherwise
+//     fail the whole query with "empty tag set").
+//
+// It returns the (possibly tag-pruned) filter and whether it is unsatisfiable.
+func sanitizeFilter(filter nostr.Filter) (nostr.Filter, bool) {
+	hasNil := false
+	for _, values := range filter.Tags {
+		if values == nil {
+			hasNil = true
+			continue
+		}
+		if len(values) == 0 {
+			return filter, true
+		}
+	}
+	if hasNil {
+		cleaned := make(nostr.TagMap, len(filter.Tags))
+		for name, values := range filter.Tags {
+			if values != nil {
+				cleaned[name] = values
+			}
+		}
+		filter.Tags = cleaned
+	}
+	return filter, false
+}
+
+// QueryEvents applies sanitizeFilter so an unsatisfiable tag filter yields an empty
+// result set instead of letting the backend fail the query with "empty tag set".
+func (s *relayStore) QueryEvents(ctx context.Context, filter nostr.Filter) (chan *nostr.Event, error) {
+	filter, unsatisfiable := sanitizeFilter(filter)
+	if unsatisfiable {
+		ch := make(chan *nostr.Event)
+		close(ch)
+		return ch, nil
+	}
+	return s.Store.QueryEvents(ctx, filter)
+}
+
+// CountEvents implements NIP-45 COUNT and applies the same empty-tag-set handling
+// as QueryEvents. Wrapping the backend in relayStore hides the underlying
+// eventstore.Counter, so we re-expose it here and delegate to the backend.
+func (s *relayStore) CountEvents(ctx context.Context, filter nostr.Filter) (int64, error) {
+	filter, unsatisfiable := sanitizeFilter(filter)
+	if unsatisfiable {
+		return 0, nil
+	}
+	if counter, ok := s.Store.(eventstore.Counter); ok {
+		return counter.CountEvents(ctx, filter)
+	}
+	return 0, fmt.Errorf("counting is not supported by this backend")
+}
+
 func (s *relayStore) AfterSave(evt *nostr.Event) {
 	// NIP-56: Reporting (kind 1984)
 	if evt.Kind != 1984 {
