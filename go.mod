@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0
-	github.com/fiatjaf/eventstore v0.17.7
+	github.com/fiatjaf/eventstore v0.17.8
 	github.com/fiatjaf/relayer/v2 v2.2.10
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -16,6 +16,7 @@ require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/aquasecurity/esquery v0.2.0 // indirect
 	github.com/btcsuite/btcd/chainhash/v2 v2.0.0 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
@@ -35,7 +36,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/mailru/easyjson v0.9.2 // indirect
-	github.com/mattn/go-sqlite3 v1.14.45 // indirect
+	github.com/mattn/go-sqlite3 v1.14.47 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opensearch-project/opensearch-go/v4 v4.6.0 // indirect
@@ -45,6 +46,7 @@ require (
 	github.com/tidwall/gjson v1.19.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tursodatabase/libsql-client-go v0.0.0-20260528064733-9d5d30a29a60 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.71.0 // indirect
@@ -56,4 +58,3 @@ require (
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
-//replace github.com/fiatjaf/eventstore => ../../fiatjaf/eventstore

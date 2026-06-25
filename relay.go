@@ -18,6 +18,7 @@ import (
 	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
+	"github.com/fiatjaf/eventstore/turso"
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
@@ -29,6 +30,7 @@ import (
 type Relay struct {
 	driverName        string
 	sqlite3Storage    *sqlite3.SQLite3Backend
+	tursoStorage      *turso.TursoBackend
 	postgresStorage   *postgresql.PostgresBackend
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
@@ -53,6 +55,8 @@ func (r *Relay) DB() *sqlx.DB {
 	switch r.driverName {
 	case "sqlite3":
 		return r.sqlite3Storage.DB
+	case "turso":
+		return r.tursoStorage.DB
 	case "postgresql":
 		return r.postgresStorage.DB
 	case "mysql":
@@ -74,6 +78,8 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 		switch r.driverName {
 		case "sqlite3":
 			baseStore = r.sqlite3Storage
+		case "turso":
+			baseStore = r.tursoStorage
 		case "postgresql":
 			baseStore = r.postgresStorage
 		case "mysql":

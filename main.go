@@ -19,6 +19,7 @@ import (
 	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
+	"github.com/fiatjaf/eventstore/turso"
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/nbd-wtf/go-nostr"
 )
@@ -89,7 +90,7 @@ func main() {
 	var databaseURL string
 
 	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
-	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/postgresql/mysql/opensearch)")
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/turso/postgresql/mysql/opensearch)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
 	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
 	flag.StringVar(&r.customSearchURL, "custom-search", envDef("CUSTOM_SEARCH_URL", ""), "custom search URL for NIP-50")
@@ -119,6 +120,12 @@ func main() {
 	switch r.driverName {
 	case "sqlite3", "":
 		r.sqlite3Storage = &sqlite3.SQLite3Backend{
+			DatabaseURL:    databaseURL,
+			QueryLimit:     relayLimitationDocument.MaxLimit,
+			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
+		}
+	case "turso":
+		r.tursoStorage = &turso.TursoBackend{
 			DatabaseURL:    databaseURL,
 			QueryLimit:     relayLimitationDocument.MaxLimit,
 			QueryTagsLimit: relayLimitationDocument.MaxEventTags,
