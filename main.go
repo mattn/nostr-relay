@@ -136,6 +136,7 @@ func main() {
 			QueryLimit:        relayLimitationDocument.MaxLimit,
 			QueryTagsLimit:    relayLimitationDocument.MaxEventTags,
 			QueryAuthorsLimit: 1000,
+			QueryKindsLimit:   100,
 			KeepRecentEvents:  true,
 		}
 	case "mysql":
