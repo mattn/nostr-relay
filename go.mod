@@ -89,4 +89,4 @@ require (
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
 
 // use the local eventstore checkout, which has the firestore backend
-replace github.com/fiatjaf/eventstore => ../../fiatjaf/eventstore
+//replace github.com/fiatjaf/eventstore => ../../fiatjaf/eventstore
