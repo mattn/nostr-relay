@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0
-	github.com/fiatjaf/eventstore v0.17.8
+	github.com/fiatjaf/eventstore v0.17.9
 	github.com/fiatjaf/relayer/v2 v2.2.11
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -87,6 +87,3 @@ require (
 )
 
 //replace github.com/fiatjaf/relayer/v2 => ../../go/src/github.com/fiatjaf/relayer
-
-// use the local eventstore checkout, which has the firestore backend
-//replace github.com/fiatjaf/eventstore => ../../fiatjaf/eventstore
