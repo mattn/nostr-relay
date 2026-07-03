@@ -14,6 +14,7 @@ import (
 	"sync/atomic"
 
 	"github.com/fiatjaf/eventstore"
+	"github.com/fiatjaf/eventstore/firestore"
 	"github.com/fiatjaf/eventstore/mysql"
 	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
@@ -34,6 +35,7 @@ type Relay struct {
 	postgresStorage   *postgresql.PostgresBackend
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
+	firestoreStorage  *firestore.FirestoreBackend
 	storeWithHooks    *relayStore
 	customSearchURL   string
 	initStoreOnce     sync.Once
@@ -61,7 +63,7 @@ func (r *Relay) DB() *sqlx.DB {
 		return r.postgresStorage.DB
 	case "mysql":
 		return r.mysqlStorage.DB
-	case "opensearch":
+	case "opensearch", "firestore":
 		return nil
 	default:
 		panic("unsupported backend driver")
@@ -86,6 +88,8 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 			baseStore = r.mysqlStorage
 		case "opensearch":
 			baseStore = r.opensearchStorage
+		case "firestore":
+			baseStore = r.firestoreStorage
 		default:
 			panic("unsupported backend driver")
 		}

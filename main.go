@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fiatjaf/eventstore/firestore"
 	"github.com/fiatjaf/eventstore/mysql"
 	"github.com/fiatjaf/eventstore/opensearch"
 	"github.com/fiatjaf/eventstore/postgresql"
@@ -90,8 +91,8 @@ func main() {
 	var databaseURL string
 
 	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
-	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/turso/postgresql/mysql/opensearch)")
-	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string")
+	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/turso/postgresql/mysql/opensearch/firestore)")
+	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string (firestore: GCP project ID)")
 	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
 	flag.StringVar(&r.customSearchURL, "custom-search", envDef("CUSTOM_SEARCH_URL", ""), "custom search URL for NIP-50")
 	flag.BoolVar(&ver, "version", false, "show version")
@@ -150,6 +151,13 @@ func main() {
 			URL:       databaseURL,
 			IndexName: "",
 			Insecure:  true,
+		}
+	case "firestore":
+		r.firestoreStorage = &firestore.FirestoreBackend{
+			ProjectID:  databaseURL,
+			DatabaseID: envDef("FIRESTORE_DATABASE", ""),
+			Collection: envDef("FIRESTORE_COLLECTION", "nostr-events"),
+			QueryLimit: relayLimitationDocument.MaxLimit,
 		}
 	default:
 		fmt.Fprintln(os.Stderr, "unsupported backend driver:", r.driverName)
