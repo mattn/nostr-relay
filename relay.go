@@ -304,7 +304,7 @@ var relayLimitationDocument = &nip11.RelayLimitationDocument{
 	MaxSubscriptions: 20,    //
 	MaxLimit:         500,   //
 	MaxSubidLength:   100,   //
-	MaxEventTags:     100,   //
+	MaxEventTags:     1000,  //
 	MaxContentLength: 16384, //
 	MinPowDifficulty: 0,     // No PoW requirement
 	AuthRequired:     false,
