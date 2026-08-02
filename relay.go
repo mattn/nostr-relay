@@ -428,6 +428,15 @@ func (r *Relay) Errorf(format string, v ...any) {
 	case strings.Contains(msg, "too many kinds"):
 		slog.Warn(msg)
 		return
+	case strings.HasPrefix(msg, "error writing ping:"):
+		// the client went away between two keepalives, which is ordinary churn on
+		// a public relay rather than a fault. Matched by prefix on purpose: the
+		// wrapped cause is a bare *net.OpError ("broken pipe", "connection reset
+		// by peer", "use of closed network connection") that the storage backends
+		// report verbatim too, so matching the cause would also silence a dead
+		// database.
+		slog.Debug(msg)
+		return
 	}
 	slog.Error(msg)
 }

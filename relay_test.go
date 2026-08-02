@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"math"
 	"slices"
 	"testing"
@@ -220,6 +221,75 @@ func TestRelayStoreCountEventsSanitizesBeforeBackend(t *testing.T) {
 		t.Errorf("unsatisfiable filter was forwarded to the backend: %+v", backend.counted[1:])
 	}
 }
+
+// Errorf is the sink for both websocket keepalive failures and storage failures.
+// Quieting the former must not quiet the latter: the underlying *net.OpError text
+// is identical, so only the ping message's own prefix may be downgraded.
+func TestErrorfDowngradesOnlyPingWriteFailures(t *testing.T) {
+	tests := []struct {
+		name   string
+		format string
+		args   []any
+		want   slog.Level
+	}{
+		{
+			name:   "ping write failure",
+			format: "error writing ping: %v; closing websocket",
+			args:   []any{"set tcp 172.25.0.3:7447: use of closed network connection"},
+			want:   slog.LevelDebug,
+		},
+		{
+			name:   "storage failure with the same underlying cause",
+			format: "store: %v",
+			args:   []any{"write tcp 10.0.0.2:52344->10.0.0.5:5432: write: broken pipe"},
+			want:   slog.LevelError,
+		},
+		{
+			name:   "storage failure on a reset backend connection",
+			format: "store: %v",
+			args:   []any{"read tcp 10.0.0.2:52344->10.0.0.5:5432: connection reset by peer"},
+			want:   slog.LevelError,
+		},
+		{
+			name:   "too many kinds stays a warning",
+			format: "store: %v",
+			args:   []any{"too many kinds"},
+			want:   slog.LevelWarn,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := &recordingHandler{}
+			restore := slog.Default()
+			slog.SetDefault(slog.New(rec))
+			defer slog.SetDefault(restore)
+
+			(&Relay{}).Errorf(tt.format, tt.args...)
+
+			if len(rec.levels) != 1 {
+				t.Fatalf("logged %d records, want 1", len(rec.levels))
+			}
+			if rec.levels[0] != tt.want {
+				t.Errorf("logged at %v, want %v", rec.levels[0], tt.want)
+			}
+		})
+	}
+}
+
+type recordingHandler struct {
+	levels []slog.Level
+}
+
+func (h *recordingHandler) Enabled(context.Context, slog.Level) bool { return true }
+
+func (h *recordingHandler) Handle(_ context.Context, r slog.Record) error {
+	h.levels = append(h.levels, r.Level)
+	return nil
+}
+
+func (h *recordingHandler) WithAttrs([]slog.Attr) slog.Handler { return h }
+func (h *recordingHandler) WithGroup(string) slog.Handler      { return h }
 
 func equalTimestamp(got, want *nostr.Timestamp) bool {
 	if got == nil || want == nil {
