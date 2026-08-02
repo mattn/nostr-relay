@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -106,16 +107,19 @@ type relayStore struct {
 
 func (s *relayStore) BeforeSave(ctx context.Context, evt *nostr.Event) {}
 
-// sanitizeFilter reconciles empty tag sets, which the underlying backends reject
-// as errors, with go-nostr's Filter.Matches semantics:
+// sanitizeFilter reconciles filter shapes that the underlying backends reject as
+// errors with go-nostr's Filter.Matches semantics:
 //
 //   - a non-nil but empty value list (e.g. {"#e": []}) can never match any event,
 //     so the filter is unsatisfiable and the caller should return no results;
 //   - a nil value list (e.g. {"#e": null}) is treated as no constraint, so the tag
 //     entry is dropped before the filter reaches the backend (which would otherwise
-//     fail the whole query with "empty tag set").
+//     fail the whole query with "empty tag set");
+//   - since/until/kinds outside the 32-bit range of the sql `created_at` and `kind`
+//     columns are rewritten by sanitizeCreatedAt/sanitizeKinds below, which would
+//     otherwise fail the whole query with "out of range for type integer".
 //
-// It returns the (possibly tag-pruned) filter and whether it is unsatisfiable.
+// It returns the (possibly rewritten) filter and whether it is unsatisfiable.
 func sanitizeFilter(filter nostr.Filter) (nostr.Filter, bool) {
 	hasNil := false
 	for _, values := range filter.Tags {
@@ -136,6 +140,73 @@ func sanitizeFilter(filter nostr.Filter) (nostr.Filter, bool) {
 		}
 		filter.Tags = cleaned
 	}
+	filter, unsatisfiable := sanitizeCreatedAt(filter)
+	if unsatisfiable {
+		return filter, true
+	}
+	return sanitizeKinds(filter)
+}
+
+// sanitizeCreatedAt rewrites since/until that fall outside the range of the sql
+// `created_at` column, which the postgresql and mysql backends declare as a 32-bit
+// `integer` and bind the raw filter timestamp against. go-nostr's Timestamp is an
+// int64 and is decoded without a range check, so a client can send a value the
+// column cannot hold; postgresql then fails the entire query with
+// "out of range for type integer" (sqlstate 22003) rather than returning no rows.
+//
+// Because no stored row can hold a created_at outside that range, both rewrites are
+// exact rather than approximate:
+//
+//   - since > max (or until < min) can never be satisfied, so the filter is
+//     unsatisfiable and the caller should return no results;
+//   - since < min (or until > max) is satisfied by every row, so the bound is no
+//     constraint at all and is dropped before the filter reaches the backend.
+func sanitizeCreatedAt(filter nostr.Filter) (nostr.Filter, bool) {
+	if filter.Since != nil {
+		switch since := int64(*filter.Since); {
+		case since > math.MaxInt32:
+			return filter, true
+		case since < math.MinInt32:
+			filter.Since = nil
+		}
+	}
+	if filter.Until != nil {
+		switch until := int64(*filter.Until); {
+		case until < math.MinInt32:
+			return filter, true
+		case until > math.MaxInt32:
+			filter.Until = nil
+		}
+	}
+	return filter, false
+}
+
+// sanitizeKinds drops kinds that fall outside the range of the sql `kind` column,
+// which has the same 32-bit width and the same unchecked binding as `created_at`
+// (see sanitizeCreatedAt). No stored row can hold such a kind, so dropping one only
+// removes an alternative that could never match — but dropping every kind of a
+// non-empty list leaves a filter that can match nothing, which is unsatisfiable
+// rather than unconstrained.
+func sanitizeKinds(filter nostr.Filter) (nostr.Filter, bool) {
+	inRange := 0
+	for _, kind := range filter.Kinds {
+		if kind >= math.MinInt32 && kind <= math.MaxInt32 {
+			inRange++
+		}
+	}
+	if inRange == len(filter.Kinds) {
+		return filter, false
+	}
+	if inRange == 0 {
+		return filter, true
+	}
+	cleaned := make([]int, 0, inRange)
+	for _, kind := range filter.Kinds {
+		if kind >= math.MinInt32 && kind <= math.MaxInt32 {
+			cleaned = append(cleaned, kind)
+		}
+	}
+	filter.Kinds = cleaned
 	return filter, false
 }
 
