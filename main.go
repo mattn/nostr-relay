@@ -27,7 +27,7 @@ import (
 
 const name = "nostr-relay"
 
-const version = "0.0.248"
+const version = "0.0.249"
 
 var revision = "HEAD"
 
@@ -139,6 +139,10 @@ func main() {
 			QueryAuthorsLimit: 1000,
 			QueryKindsLimit:   100,
 			KeepRecentEvents:  true,
+			// NIP-50 search by substring (ILIKE '%q%') so partial and CJK terms
+			// match (e.g. "東京" finds "東京都"), which tsvector misses. Needs a
+			// pg_trgm "gin (content gin_trgm_ops)" index to stay fast.
+			SubstringSearch: true,
 		}
 	case "mysql":
 		r.mysqlStorage = &mysql.MySQLBackend{
