@@ -66,8 +66,8 @@ github.com/felixge/httpsnoop v1.1.0 h1:3YtUj32ZZkqZtt3sZZsClsymw/QDuVfpNhoA31zeO
 github.com/felixge/httpsnoop v1.1.0/go.mod h1:Zqxgdd+1Rkcz8euOqdr7lqgCRJztwr5hp9vDSi5UZCE=
 github.com/fiatjaf/eventstore v0.17.12 h1:U5sjiDPtbsj88utSK0gDJ7PtgaSBmUnwpsZi+T1C6GI=
 github.com/fiatjaf/eventstore v0.17.12/go.mod h1:TgVcdIfGnRz5rDoZfb4Fb99DWDoCnbYauUoHEe2OcA8=
-github.com/fiatjaf/relayer/v2 v2.2.15 h1:/7eOQs8DxM+G4WxfpMpEa9B5/X3CZiYxSTXVtstq/KA=
-github.com/fiatjaf/relayer/v2 v2.2.15/go.mod h1:JGecfj+NKIZLYWnSxus0ss156YQNMDX7p44DLBY/W0I=
+github.com/fiatjaf/relayer/v2 v2.2.16 h1:FfPdJ1A7ycYkSq+j3lNOUsi+HiVOcNmsAVNNepJpoqk=
+github.com/fiatjaf/relayer/v2 v2.2.16/go.mod h1:JGecfj+NKIZLYWnSxus0ss156YQNMDX7p44DLBY/W0I=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
