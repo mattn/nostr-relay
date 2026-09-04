@@ -38,7 +38,7 @@ var (
 	_ relayer.Logger        = (*Relay)(nil)
 	_ relayer.Auther        = (*Relay)(nil)
 
-	supportedNIPs = []any{1, 2, 4, 9, 11, 12, 15, 16, 17, 20, 22, 26, 28, 33, 40, 42, 45, 50, 59, 65, 70, 77}
+	supportedNIPs = []any{1, 4, 9, 11, 17, 26, 40, 42, 45, 50, 59, 70}
 
 	//go:embed static
 	assets embed.FS
