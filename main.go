@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"strings"
@@ -112,7 +113,7 @@ func main() {
 		log.Fatalf("failed to parse port number: %v", err)
 	}
 
-	if envDef("ENABLE_PPOROF", "no") == "yes" {
+	if envDef("ENABLE_PPROF", "no") == "yes" {
 		go func() {
 			log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
 		}()
