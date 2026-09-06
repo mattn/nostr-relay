@@ -25,6 +25,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip11"
+	"github.com/nbd-wtf/go-nostr/nip13"
 	"github.com/nbd-wtf/go-nostr/nip70"
 )
 
@@ -264,6 +265,12 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	// NIP-26: Delegated Event Signing validation
 	if !validateDelegation(evt) {
 		return false, "invalid: malformed delegation"
+	}
+
+	if minPow := relayLimitationDocument.MinPowDifficulty; minPow > 0 {
+		if pow := nip13.Difficulty(evt.ID); pow < minPow {
+			return false, fmt.Sprintf("pow: difficulty %d is less than %d", pow, minPow)
+		}
 	}
 
 	// NIP-65: Relay List Metadata validation
