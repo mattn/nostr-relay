@@ -39,7 +39,7 @@ var (
 	_ relayer.Logger        = (*Relay)(nil)
 	_ relayer.Auther        = (*Relay)(nil)
 
-	supportedNIPs = []any{1, 4, 9, 11, 17, 26, 40, 42, 45, 50, 59, 66, 70, 78}
+	supportedNIPs = []any{1, 4, 9, 11, 13, 17, 26, 40, 42, 45, 50, 59, 66, 70, 78}
 
 	//go:embed static
 	assets embed.FS
@@ -51,6 +51,18 @@ func envDef(name, def string) string {
 		return value
 	}
 	return def
+}
+
+func envIntDef(name string, def int) int {
+	value := envDef(name, "")
+	if value == "" {
+		return def
+	}
+	n, err := strconv.Atoi(value)
+	if err != nil {
+		log.Fatalf("invalid %s: %v", name, err)
+	}
+	return n
 }
 
 func init() {
@@ -96,6 +108,7 @@ func main() {
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string (firestore: GCP project ID)")
 	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
 	flag.StringVar(&r.customSearchURL, "custom-search", envDef("CUSTOM_SEARCH_URL", ""), "custom search URL for NIP-50")
+	flag.IntVar(&relayLimitationDocument.MinPowDifficulty, "min-pow", envIntDef("MIN_POW_DIFFICULTY", 0), "minimum proof of work difficulty required for events (NIP-13)")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 

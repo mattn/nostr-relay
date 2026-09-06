@@ -40,6 +40,32 @@ func TestAcceptEventAllowlistMatchesAnyEntry(t *testing.T) {
 	}
 }
 
+func TestAcceptEventMinimumProofOfWork(t *testing.T) {
+	old := relayLimitationDocument.MinPowDifficulty
+	relayLimitationDocument.MinPowDifficulty = 8
+	t.Cleanup(func() { relayLimitationDocument.MinPowDifficulty = old })
+
+	r := &Relay{}
+	accepted, message := r.AcceptEvent(context.Background(), &nostr.Event{
+		ID:        "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		CreatedAt: nostr.Now(),
+	})
+	if !accepted {
+		t.Fatalf("expected sufficient proof of work to be accepted: %s", message)
+	}
+
+	accepted, message = r.AcceptEvent(context.Background(), &nostr.Event{
+		ID:        "01ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+		CreatedAt: nostr.Now(),
+	})
+	if accepted {
+		t.Fatal("expected insufficient proof of work to be rejected")
+	}
+	if message != "pow: difficulty 7 is less than 8" {
+		t.Fatalf("unexpected rejection message: %q", message)
+	}
+}
+
 func TestPerformCustomSearchStreamsResponse(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
