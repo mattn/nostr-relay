@@ -12,6 +12,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -95,6 +97,21 @@ func skipEventFunc(ev *nostr.Event) bool {
 		}
 	}
 	return false
+}
+
+// memSnapshot picks the counters that separate live objects from memory the
+// runtime is merely holding on to.
+func memSnapshot(m *runtime.MemStats) map[string]uint64 {
+	return map[string]uint64{
+		"sys":           m.Sys,
+		"heap_alloc":    m.HeapAlloc,
+		"heap_sys":      m.HeapSys,
+		"heap_idle":     m.HeapIdle,
+		"heap_inuse":    m.HeapInuse,
+		"heap_released": m.HeapReleased,
+		"heap_objects":  m.HeapObjects,
+		"num_gc":        uint64(m.NumGC),
+	}
 }
 
 func main() {
@@ -216,6 +233,21 @@ func main() {
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
+	})
+	// /gc runs a full collection and returns the free spans to the OS, so that
+	// resident memory can be told apart from a real leak: what the runtime was
+	// only holding for reuse goes away here, what is still reachable does not.
+	// The MemStats on either side say which of the two happened.
+	server.Router().HandleFunc("/gc", func(w http.ResponseWriter, req *http.Request) {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		debug.FreeOSMemory()
+		runtime.ReadMemStats(&after)
+		w.Header().Add("content-type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"before": memSnapshot(&before),
+			"after":  memSnapshot(&after),
+		})
 	})
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
