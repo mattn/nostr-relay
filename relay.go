@@ -166,6 +166,40 @@ func (s *relayStore) CountEvents(ctx context.Context, filter nostr.Filter) (int6
 	return 0, fmt.Errorf("counting is not supported by this backend")
 }
 
+// CountEventsFilters implements NIP-45 counting over several filters at once,
+// where an event matching more than one of them is counted only once. As with
+// CountEvents, wrapping the backend hides the method, so it is re-exposed here.
+// A backend that cannot evaluate the union falls back to summing the filters,
+// which is exact as long as they do not overlap.
+func (s *relayStore) CountEventsFilters(ctx context.Context, filters nostr.Filters) (int64, error) {
+	sanitized := make(nostr.Filters, 0, len(filters))
+	for _, filter := range filters {
+		filter, unsatisfiable := sanitizeFilter(filter)
+		if unsatisfiable {
+			continue
+		}
+		sanitized = append(sanitized, filter)
+	}
+
+	if union, ok := s.Store.(relayer.FiltersCounter); ok {
+		return union.CountEventsFilters(ctx, sanitized)
+	}
+
+	counter, ok := s.Store.(eventstore.Counter)
+	if !ok {
+		return 0, fmt.Errorf("counting is not supported by this backend")
+	}
+	total := int64(0)
+	for _, filter := range sanitized {
+		count, err := counter.CountEvents(ctx, filter)
+		if err != nil {
+			return 0, err
+		}
+		total += count
+	}
+	return total, nil
+}
+
 func (s *relayStore) AfterSave(evt *nostr.Event) {
 	// NIP-56: Reporting (kind 1984)
 	if evt.Kind != 1984 {
