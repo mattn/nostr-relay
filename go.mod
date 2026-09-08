@@ -4,8 +4,8 @@ go 1.26.0
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0
-	github.com/fiatjaf/eventstore v0.17.12
-	github.com/fiatjaf/relayer/v2 v2.2.18
+	github.com/fiatjaf/eventstore v0.17.13
+	github.com/fiatjaf/relayer/v2 v2.2.19
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nbd-wtf/go-nostr v0.52.3
