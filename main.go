@@ -26,6 +26,7 @@ import (
 	"github.com/fiatjaf/eventstore/turso"
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/nbd-wtf/go-nostr"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const name = "nostr-relay"
@@ -249,6 +250,12 @@ func main() {
 			"after":  memSnapshot(&after),
 		})
 	})
+	// /metrics exposes the Go runtime counters that say whether resident
+	// memory is a leak: go_memstats_sys_bytes stops growing when the runtime
+	// is only reusing what it already holds, go_memstats_heap_alloc_bytes
+	// keeps growing when something is still reachable, and go_goroutines does
+	// not come back down when a goroutine is lost.
+	server.Router().Handle("/metrics", promhttp.Handler())
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
 	server.Log = &r

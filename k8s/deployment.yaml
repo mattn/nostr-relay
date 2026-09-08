@@ -11,6 +11,14 @@ spec:
       app: nostr-relay
   template:
     metadata:
+      annotations:
+        # scraped for the Go runtime counters that tell resident memory
+        # apart from a leak: sys stops growing when the runtime is only
+        # reusing what it holds, heap_alloc keeps growing when something
+        # is still reachable.
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "7447"
       labels:
         app: nostr-relay
     spec:
