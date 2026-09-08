@@ -144,23 +144,6 @@ func main() {
 	}
 
 	if envDef("ENABLE_PPROF", "no") == "yes" {
-		// /gc runs a full GC and returns the freed spans to the OS, so that
-		// RSS can be told apart from a real leak: memory the runtime was only
-		// holding for reuse goes away here, memory that is still reachable
-		// does not. It shares the pprof listener because a stop-the-world
-		// collection is not something an unauthenticated caller on the relay
-		// port should be able to trigger at will.
-		http.HandleFunc("/gc", func(w http.ResponseWriter, req *http.Request) {
-			var before, after runtime.MemStats
-			runtime.ReadMemStats(&before)
-			debug.FreeOSMemory()
-			runtime.ReadMemStats(&after)
-			w.Header().Set("content-type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{
-				"before": memSnapshot(&before),
-				"after":  memSnapshot(&after),
-			})
-		})
 		go func() {
 			log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
 		}()
@@ -250,6 +233,21 @@ func main() {
 	})
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
+	})
+	// /gc runs a full collection and returns the free spans to the OS, so that
+	// resident memory can be told apart from a real leak: what the runtime was
+	// only holding for reuse goes away here, what is still reachable does not.
+	// The MemStats on either side say which of the two happened.
+	server.Router().HandleFunc("/gc", func(w http.ResponseWriter, req *http.Request) {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		debug.FreeOSMemory()
+		runtime.ReadMemStats(&after)
+		w.Header().Add("content-type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"before": memSnapshot(&before),
+			"after":  memSnapshot(&after),
+		})
 	})
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
