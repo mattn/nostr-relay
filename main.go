@@ -100,6 +100,29 @@ func skipEventFunc(ev *nostr.Event) bool {
 	return false
 }
 
+// MEM_PROFILE_RATE sets runtime.MemProfileRate, the average number of bytes
+// allocated between heap profile samples. The 512KB default is too coarse to
+// attribute a slow leak: a few hundred small objects an hour disappear into the
+// sampling quantum, and the counts that come back are extrapolations in
+// multiples of it. Lowering it (4096, say) makes a diff of two profiles name the
+// allocation site exactly, at the cost of some allocation speed.
+//
+// This runs in init rather than main because the rate has to be set before the
+// allocations it is meant to sample, and by the time main runs the packages
+// have already allocated.
+func init() {
+	v := os.Getenv("MEM_PROFILE_RATE")
+	if v == "" {
+		return
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 0 {
+		log.Printf("ignoring MEM_PROFILE_RATE=%q: want a non-negative integer", v)
+		return
+	}
+	runtime.MemProfileRate = n
+}
+
 // memSnapshot picks the counters that separate live objects from memory the
 // runtime is merely holding on to.
 func memSnapshot(m *runtime.MemStats) map[string]uint64 {
