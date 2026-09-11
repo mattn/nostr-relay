@@ -327,7 +327,11 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		return false, ""
 	}
 
-	slog.Debug("AcceptEvent", "event", []any{"EVENT", evt})
+	// The address travels with the event so a single log line answers who
+	// sent what, instead of leaving that to be reconstructed from the
+	// connection lines by timestamp.
+	ip, _ := relayer.GetIP(ctx)
+	slog.Debug("AcceptEvent", "ip", ip, "event", []any{"EVENT", evt})
 	return true, ""
 }
 

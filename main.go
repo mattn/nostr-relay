@@ -227,6 +227,9 @@ func main() {
 		&r,
 		relayer.WithPerConnectionLimiter(5.0, 1),
 		relayer.WithSkipEventFunc(skipEventFunc),
+		// Every connection arrives through the Cloudflare tunnel, which owns
+		// this header; nothing can reach the relay directly and forge it.
+		relayer.WithTrustedProxyHeader("X-Forwarded-For"),
 	)
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
