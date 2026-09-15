@@ -37,7 +37,7 @@ type Relay struct {
 	mysqlStorage      *mysql.MySQLBackend
 	opensearchStorage *opensearch.OpensearchStorage
 	firestoreStorage  *firestore.FirestoreBackend
-	storeWithHooks    *relayStore
+	storeWithHooks    eventstore.Store
 	customSearchURL   string
 	initStoreOnce     sync.Once
 
@@ -95,9 +95,32 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 			panic("unsupported backend driver")
 		}
 
-		r.storeWithHooks = &relayStore{Store: baseStore}
+		store := &relayStore{Store: baseStore}
+		if notifier, ok := baseStore.(eventstore.Notifier); ok {
+			r.storeWithHooks = &notifyingRelayStore{relayStore: store, notifier: notifier}
+		} else {
+			r.storeWithHooks = store
+		}
 	})
 	return r.storeWithHooks
+}
+
+// notifyingRelayStore re-exposes eventstore.Notifier, which wrapping the backend
+// in relayStore would hide, so that several instances sharing one database
+// (e.g. postgresql) push each other's events to their subscribers. It is only
+// used when the backend implements Notifier, since relayer would otherwise
+// route all deliveries through it.
+type notifyingRelayStore struct {
+	*relayStore
+	notifier eventstore.Notifier
+}
+
+func (s *notifyingRelayStore) Notify(ctx context.Context, evt *nostr.Event) error {
+	return s.notifier.Notify(ctx, evt)
+}
+
+func (s *notifyingRelayStore) Notifications(ctx context.Context) (<-chan *nostr.Event, error) {
+	return s.notifier.Notifications(ctx)
 }
 
 // relayStore wraps eventstore.Store and implements AdvancedSaver with pushover notification.
