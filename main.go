@@ -12,6 +12,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -24,11 +26,12 @@ import (
 	"github.com/fiatjaf/eventstore/turso"
 	"github.com/fiatjaf/relayer/v2"
 	"github.com/nbd-wtf/go-nostr"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const name = "nostr-relay"
 
-const version = "0.0.257"
+const version = "0.0.264"
 
 var revision = "HEAD"
 
@@ -95,6 +98,44 @@ func skipEventFunc(ev *nostr.Event) bool {
 		}
 	}
 	return false
+}
+
+// MEM_PROFILE_RATE sets runtime.MemProfileRate, the average number of bytes
+// allocated between heap profile samples. The 512KB default is too coarse to
+// attribute a slow leak: a few hundred small objects an hour disappear into the
+// sampling quantum, and the counts that come back are extrapolations in
+// multiples of it. Lowering it (4096, say) makes a diff of two profiles name the
+// allocation site exactly, at the cost of some allocation speed.
+//
+// This runs in init rather than main because the rate has to be set before the
+// allocations it is meant to sample, and by the time main runs the packages
+// have already allocated.
+func init() {
+	v := os.Getenv("MEM_PROFILE_RATE")
+	if v == "" {
+		return
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 0 {
+		log.Printf("ignoring MEM_PROFILE_RATE=%q: want a non-negative integer", v)
+		return
+	}
+	runtime.MemProfileRate = n
+}
+
+// memSnapshot picks the counters that separate live objects from memory the
+// runtime is merely holding on to.
+func memSnapshot(m *runtime.MemStats) map[string]uint64 {
+	return map[string]uint64{
+		"sys":           m.Sys,
+		"heap_alloc":    m.HeapAlloc,
+		"heap_sys":      m.HeapSys,
+		"heap_idle":     m.HeapIdle,
+		"heap_inuse":    m.HeapInuse,
+		"heap_released": m.HeapReleased,
+		"heap_objects":  m.HeapObjects,
+		"num_gc":        uint64(m.NumGC),
+	}
 }
 
 func main() {
@@ -186,6 +227,9 @@ func main() {
 		&r,
 		relayer.WithPerConnectionLimiter(5.0, 1),
 		relayer.WithSkipEventFunc(skipEventFunc),
+		// Every connection arrives through the Cloudflare tunnel, which owns
+		// this header; nothing can reach the relay directly and forge it.
+		relayer.WithTrustedProxyHeader("X-Forwarded-For"),
 	)
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
@@ -217,6 +261,27 @@ func main() {
 	server.Router().HandleFunc("/reload", func(w http.ResponseWriter, req *http.Request) {
 		r.reload()
 	})
+	// /gc runs a full collection and returns the free spans to the OS, so that
+	// resident memory can be told apart from a real leak: what the runtime was
+	// only holding for reuse goes away here, what is still reachable does not.
+	// The MemStats on either side say which of the two happened.
+	server.Router().HandleFunc("/gc", func(w http.ResponseWriter, req *http.Request) {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		debug.FreeOSMemory()
+		runtime.ReadMemStats(&after)
+		w.Header().Add("content-type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"before": memSnapshot(&before),
+			"after":  memSnapshot(&after),
+		})
+	})
+	// /metrics exposes the Go runtime counters that say whether resident
+	// memory is a leak: go_memstats_sys_bytes stops growing when the runtime
+	// is only reusing what it already holds, go_memstats_heap_alloc_bytes
+	// keeps growing when something is still reachable, and go_goroutines does
+	// not come back down when a goroutine is lost.
+	server.Router().Handle("/metrics", promhttp.Handler())
 	server.Router().Handle("/", http.FileServer(http.FS(sub)))
 
 	server.Log = &r
