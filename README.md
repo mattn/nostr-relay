@@ -55,8 +55,8 @@ $ nostr-relay [options]
 | Flag            | Default          | Description                                            |
 |-----------------|------------------|--------------------------------------------------------|
 | `-addr`         | `0.0.0.0:7447`   | Listen address                                         |
-| `-driver`       | `sqlite3`        | Storage driver: `sqlite3` / `postgresql` / `mysql` / `opensearch` |
-| `-database`     | `nostr-relay.sqlite` | Connection string (see [Storage backends](#storage-backends)). Falls back to `$DATABASE_URL` |
+| `-driver`       | `sqlite3`        | Storage driver: `sqlite3` / `turso` / `postgresql` / `mysql` / `opensearch` / `firestore` |
+| `-database`     | `nostr-relay.sqlite` | Connection string (see [Storage backends](#storage-backends)); the GCP project ID for `firestore`. Falls back to `$DATABASE_URL` |
 | `-service-url`  | (empty)          | Public service URL. Falls back to `$SERVICE_URL`       |
 | `-custom-search`| (empty)          | External search endpoint for NIP-50. Falls back to `$CUSTOM_SEARCH_URL` |
 | `-redis`        | (empty)          | Redis URL to propagate events between instances (see [Running several instances](#running-several-instances)). Falls back to `$REDIS_URL` |
@@ -71,6 +71,8 @@ $ nostr-relay [options]
 | `CUSTOM_SEARCH_URL`  | External search endpoint for NIP-50 (same as `-custom-search`)     |
 | `REDIS_URL`          | Redis URL to propagate events between instances (same as `-redis`) |
 | `REDIS_CHANNEL`      | Redis pub/sub channel used with `REDIS_URL` (default `nostr-relay:events`) |
+| `FIRESTORE_DATABASE` | Firestore database ID for `-driver firestore` (default: the project's default database) |
+| `FIRESTORE_COLLECTION` | Firestore collection for `-driver firestore` (default `nostr-events`) |
 | `LOG_LEVEL`          | `debug` / `info` / `warn` / `error` (default `info`)               |
 | `PUSHOVER_TOKEN`     | Pushover application token; enables NIP-56 (kind 1984) report notifications |
 | `PUSHOVER_USER`      | Pushover user key (required together with `PUSHOVER_TOKEN`)        |
@@ -100,6 +102,17 @@ The connection string is a file path and may include
 [go-sqlite3](https://github.com/mattn/go-sqlite3) options, for example
 `nostr-relay.sqlite?_journal_mode=WAL`.
 
+### Turso
+
+```
+$ nostr-relay -driver turso \
+    -database "libsql://your-db.turso.io?authToken=..."
+```
+
+The same SQLite schema, but served by [Turso](https://turso.tech) over the
+network, so several instances can share it (see
+[Running several instances](#running-several-instances)).
+
 ### PostgreSQL
 
 Create the database first, then point the relay at it. The required tables are
@@ -124,6 +137,16 @@ $ nostr-relay -driver mysql \
 $ nostr-relay -driver opensearch -database "https://localhost:9200"
 ```
 
+### Firestore
+
+```
+$ nostr-relay -driver firestore -database my-gcp-project
+```
+
+Credentials come from the usual Google application default credentials.
+`FIRESTORE_DATABASE` and `FIRESTORE_COLLECTION` select the database and the
+collection.
+
 ## Running several instances
 
 A subscription only receives events published to the same process, unless the
@@ -144,6 +167,22 @@ $ nostr-relay -addr :7448 -database "nostr-relay.sqlite?_journal_mode=WAL&_busy_
 The Redis URL follows [go-redis](https://github.com/redis/go-redis) conventions,
 e.g. `rediss://user:password@host:6379` for TLS. Set `REDIS_CHANNEL` to keep
 several relays on one Redis apart.
+
+What each driver needs to scale out:
+
+| Driver       | Sharing the storage                                   | Notifying the other instances |
+|--------------|-------------------------------------------------------|-------------------------------|
+| `sqlite3`    | Same host only: one file in WAL mode with `_busy_timeout` | Redis                     |
+| `turso`      | Anywhere: the database is served over the network     | Redis                         |
+| `postgresql` | Anywhere                                              | Built in (`LISTEN`/`NOTIFY`), or Redis |
+| `mysql`      | Anywhere                                              | Redis                         |
+| `opensearch` | Anywhere                                              | Redis                         |
+| `firestore`  | Anywhere                                              | Redis                         |
+
+So with `turso` and Redis, instances can run on different machines just like
+with PostgreSQL, without sharing a file system. Whatever the driver, start the
+first instance on its own against an empty database: the schema is created on
+startup, and several instances doing so at once can collide.
 
 ## Deployment
 
