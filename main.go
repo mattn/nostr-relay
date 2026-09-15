@@ -143,12 +143,14 @@ func main() {
 	var ver bool
 	var addr string
 	var databaseURL string
+	var redisURL string
 
 	flag.StringVar(&addr, "addr", "0.0.0.0:7447", "listen address")
 	flag.StringVar(&r.driverName, "driver", "sqlite3", "driver name (sqlite3/turso/postgresql/mysql/opensearch/firestore)")
 	flag.StringVar(&databaseURL, "database", envDef("DATABASE_URL", "nostr-relay.sqlite"), "connection string (firestore: GCP project ID)")
 	flag.StringVar(&r.serviceURL, "service-url", envDef("SERVICE_URL", ""), "service URL")
 	flag.StringVar(&r.customSearchURL, "custom-search", envDef("CUSTOM_SEARCH_URL", ""), "custom search URL for NIP-50")
+	flag.StringVar(&redisURL, "redis", envDef("REDIS_URL", ""), "redis URL to propagate events between instances (any driver)")
 	flag.IntVar(&relayLimitationDocument.MinPowDifficulty, "min-pow", envIntDef("MIN_POW_DIFFICULTY", 0), "minimum proof of work difficulty required for events (NIP-13)")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
@@ -221,6 +223,14 @@ func main() {
 	default:
 		fmt.Fprintln(os.Stderr, "unsupported backend driver:", r.driverName)
 		os.Exit(2)
+	}
+
+	if redisURL != "" {
+		notifier, err := newRedisNotifier(redisURL, envDef("REDIS_CHANNEL", "nostr-relay:events"))
+		if err != nil {
+			log.Fatalf("invalid redis URL: %v", err)
+		}
+		r.notifier = notifier
 	}
 
 	server, err := relayer.NewServer(
