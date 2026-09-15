@@ -39,6 +39,7 @@ type Relay struct {
 	firestoreStorage  *firestore.FirestoreBackend
 	storeWithHooks    eventstore.Store
 	customSearchURL   string
+	notifier          eventstore.Notifier // set when REDIS_URL is given; takes precedence over the backend's
 	initStoreOnce     sync.Once
 
 	serviceURL string
@@ -96,7 +97,11 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 		}
 
 		store := &relayStore{Store: baseStore}
-		if notifier, ok := baseStore.(eventstore.Notifier); ok {
+		notifier := r.notifier
+		if notifier == nil {
+			notifier, _ = baseStore.(eventstore.Notifier)
+		}
+		if notifier != nil {
 			r.storeWithHooks = &notifyingRelayStore{relayStore: store, notifier: notifier}
 		} else {
 			r.storeWithHooks = store
@@ -105,11 +110,12 @@ func (r *Relay) Storage(ctx context.Context) eventstore.Store {
 	return r.storeWithHooks
 }
 
-// notifyingRelayStore re-exposes eventstore.Notifier, which wrapping the backend
-// in relayStore would hide, so that several instances sharing one database
-// (e.g. postgresql) push each other's events to their subscribers. It is only
-// used when the backend implements Notifier, since relayer would otherwise
-// route all deliveries through it.
+// notifyingRelayStore exposes eventstore.Notifier on the store, so that several
+// instances push each other's events to their subscribers: either the Redis
+// notifier when one is configured, or the backend's own (e.g. postgresql's
+// LISTEN/NOTIFY), which wrapping it in relayStore would otherwise hide. It is
+// only used when there is a notifier, since relayer would otherwise route all
+// deliveries through it.
 type notifyingRelayStore struct {
 	*relayStore
 	notifier eventstore.Notifier

@@ -13,6 +13,7 @@ back up its SQLite database with [litestream](https://litestream.io/).
   - [Environment variables](#environment-variables)
   - [NIP-11 information](#nip-11-information)
 - [Storage backends](#storage-backends)
+- [Running several instances](#running-several-instances)
 - [Deployment](#deployment)
   - [systemd](#systemd)
   - [Docker](#docker)
@@ -58,6 +59,7 @@ $ nostr-relay [options]
 | `-database`     | `nostr-relay.sqlite` | Connection string (see [Storage backends](#storage-backends)). Falls back to `$DATABASE_URL` |
 | `-service-url`  | (empty)          | Public service URL. Falls back to `$SERVICE_URL`       |
 | `-custom-search`| (empty)          | External search endpoint for NIP-50. Falls back to `$CUSTOM_SEARCH_URL` |
+| `-redis`        | (empty)          | Redis URL to propagate events between instances (see [Running several instances](#running-several-instances)). Falls back to `$REDIS_URL` |
 | `-version`      | `false`          | Print the version and exit                             |
 
 ### Environment variables
@@ -67,6 +69,8 @@ $ nostr-relay [options]
 | `DATABASE_URL`       | Connection string (same as `-database`)                            |
 | `SERVICE_URL`        | Public service URL (same as `-service-url`)                        |
 | `CUSTOM_SEARCH_URL`  | External search endpoint for NIP-50 (same as `-custom-search`)     |
+| `REDIS_URL`          | Redis URL to propagate events between instances (same as `-redis`) |
+| `REDIS_CHANNEL`      | Redis pub/sub channel used with `REDIS_URL` (default `nostr-relay:events`) |
 | `LOG_LEVEL`          | `debug` / `info` / `warn` / `error` (default `info`)               |
 | `PUSHOVER_TOKEN`     | Pushover application token; enables NIP-56 (kind 1984) report notifications |
 | `PUSHOVER_USER`      | Pushover user key (required together with `PUSHOVER_TOKEN`)        |
@@ -119,6 +123,27 @@ $ nostr-relay -driver mysql \
 ```
 $ nostr-relay -driver opensearch -database "https://localhost:9200"
 ```
+
+## Running several instances
+
+A subscription only receives events published to the same process, unless the
+instances tell each other about the events they accept. Two ways are supported:
+
+- **PostgreSQL**: instances sharing one database notify each other through
+  `LISTEN`/`NOTIFY`. Nothing to configure.
+- **Redis**: with `-redis` (or `REDIS_URL`), every accepted event is published on
+  a Redis pub/sub channel and delivered by all instances subscribed to it. This
+  works with any storage driver, and takes precedence over PostgreSQL's
+  notifications when both are available.
+
+```
+$ nostr-relay -addr :7447 -database "nostr-relay.sqlite?_journal_mode=WAL&_busy_timeout=5000" -redis redis://localhost:6379 &
+$ nostr-relay -addr :7448 -database "nostr-relay.sqlite?_journal_mode=WAL&_busy_timeout=5000" -redis redis://localhost:6379 &
+```
+
+The Redis URL follows [go-redis](https://github.com/redis/go-redis) conventions,
+e.g. `rediss://user:password@host:6379` for TLS. Set `REDIS_CHANNEL` to keep
+several relays on one Redis apart.
 
 ## Deployment
 
