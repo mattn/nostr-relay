@@ -136,17 +136,24 @@ type relayStore struct {
 
 func (s *relayStore) BeforeSave(ctx context.Context, evt *nostr.Event) {}
 
-// sanitizeFilter reconciles empty tag sets, which the underlying backends reject
-// as errors, with go-nostr's Filter.Matches semantics:
+// sanitizeFilter reconciles empty filter lists, which the underlying backends
+// either reject as errors or treat as absent, with NIP-01 and go-nostr's
+// Filter.Matches semantics:
 //
-//   - a non-nil but empty value list (e.g. {"#e": []}) can never match any event,
-//     so the filter is unsatisfiable and the caller should return no results;
+//   - a non-nil but empty list (e.g. {"kinds": []} or {"#e": []}) can never match
+//     any event, so the filter is unsatisfiable and the caller should return no
+//     results;
 //   - a nil value list (e.g. {"#e": null}) is treated as no constraint, so the tag
 //     entry is dropped before the filter reaches the backend (which would otherwise
 //     fail the whole query with "empty tag set").
 //
 // It returns the (possibly tag-pruned) filter and whether it is unsatisfiable.
 func sanitizeFilter(filter nostr.Filter) (nostr.Filter, bool) {
+	if (filter.IDs != nil && len(filter.IDs) == 0) ||
+		(filter.Authors != nil && len(filter.Authors) == 0) ||
+		(filter.Kinds != nil && len(filter.Kinds) == 0) {
+		return filter, true
+	}
 	hasNil := false
 	for _, values := range filter.Tags {
 		if values == nil {
