@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/fiatjaf/eventstore"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/eventstore/sqlite3"
+	"github.com/nbd-wtf/go-nostr"
 )
 
 // The store wrapper must expose Notifier exactly when there is one, either
@@ -35,6 +38,30 @@ func TestStorageExposesNotifier(t *testing.T) {
 		}
 		if _, ok := tt.relay.Storage(context.Background()).(eventstore.Counter); !ok {
 			t.Errorf("%s: Counter no longer exposed", tt.name)
+		}
+	}
+}
+
+// NIP-01: an empty filter list matches nothing and must not be treated as absent.
+func TestSanitizeFilterEmptyLists(t *testing.T) {
+	for _, tt := range []struct {
+		json          string
+		unsatisfiable bool
+	}{
+		{`{"limit":3}`, false},
+		{`{"kinds":[]}`, true},
+		{`{"authors":[]}`, true},
+		{`{"ids":[]}`, true},
+		{`{"#e":[]}`, true},
+		{`{"#t":[],"kinds":[1]}`, true},
+		{`{"kinds":[1],"authors":["` + strings.Repeat("a", 64) + `"]}`, false},
+	} {
+		var filter nostr.Filter
+		if err := json.Unmarshal([]byte(tt.json), &filter); err != nil {
+			t.Fatalf("%s: %v", tt.json, err)
+		}
+		if _, got := sanitizeFilter(filter); got != tt.unsatisfiable {
+			t.Errorf("%s: unsatisfiable = %v, want %v", tt.json, got, tt.unsatisfiable)
 		}
 	}
 }
