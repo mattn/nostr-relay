@@ -12,6 +12,7 @@ back up its SQLite database with [litestream](https://litestream.io/).
   - [Command-line flags](#command-line-flags)
   - [Environment variables](#environment-variables)
   - [NIP-11 information](#nip-11-information)
+  - [Paid writes](#paid-writes)
 - [Storage backends](#storage-backends)
 - [Running several instances](#running-several-instances)
 - [Deployment](#deployment)
@@ -109,6 +110,43 @@ NOSTR_RELAY_PAYMENTSURL="https://relay.example.com/pay"
 NOSTR_RELAY_LIMITATION_PAYMENTREQUIRED=true
 NOSTR_RELAY_FEES='{"admission":[{"amount":1000000,"unit":"msats"}]}'
 ```
+
+### Paid writes
+
+Optionally, the relay can charge a fee for each event, taken from a prepaid
+balance per pubkey. Balances are topped up through a
+[Bark](https://gitlab.com/ark-bitcoin/bark) wallet daemon (`barkd`), in either
+or both of two ways:
+
+- `ark`: each pubkey gets its own Ark address, and an Ark payment to it is
+  credited as soon as it shows up in the wallet history;
+- `lightning`: a Lightning invoice, received through the Ark server's Lightning
+  gateway.
+
+It is off unless `BARKD_URL` is set, and needs a SQL driver (`sqlite3`, `turso`,
+`postgresql` or `mysql`) for the balances.
+
+| Variable                   | Description                                                  |
+|----------------------------|--------------------------------------------------------------|
+| `BARKD_URL`                | barkd REST URL, e.g. `http://127.0.0.1:3000`; enables paid writes |
+| `BARKD_TOKEN`              | barkd auth token, if it has one                              |
+| `PAID_WRITES_FEE_MSATS`    | fee per event in msats (default `1000`)                      |
+| `PAID_WRITES_KINDS`        | comma-separated kinds to charge (default: all)               |
+| `PAID_WRITES_RAILS`        | `ark`, `lightning` or `ark,lightning` (default)              |
+| `PAID_WRITES_POLL_SECONDS` | how often to look for payments (default `5`)                 |
+
+The NIP-11 document then advertises `payment_required`, `restricted_writes`,
+`fees.publication` and `payments_url`, which is `/pay` on the `-service-url`
+unless `NOSTR_RELAY_PAYMENTSURL` says otherwise. An event without enough credit
+is rejected with `restricted:` and that URL.
+
+```
+$ curl 'https://relay.example.com/pay?pubkey=<hex>&amount=1000'
+{"ark_address":"ark1...","balance_msats":0,"fee_msats":1000,"invoice":"lnbc...","pubkey":"<hex>"}
+```
+
+`amount` (sats) asks for a Lightning invoice; without it only the balance and
+the Ark address are returned.
 
 ## Storage backends
 

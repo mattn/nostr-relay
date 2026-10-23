@@ -44,6 +44,7 @@ type Relay struct {
 
 	serviceURL string
 	lists      atomic.Pointer[relayLists]
+	paid       *paidWrites // set when BARKD_URL is given
 }
 
 type relayLists struct {
@@ -364,6 +365,12 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	}
 	if len(evt.Content) > relayLimitationDocument.MaxContentLength {
 		return false, ""
+	}
+
+	if r.paid != nil {
+		if ok, msg := r.paid.charge(ctx, evt); !ok {
+			return false, msg
+		}
 	}
 
 	// The address travels with the event so a single log line answers who
