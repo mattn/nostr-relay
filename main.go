@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"flag"
@@ -160,6 +161,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if err := loadRelayInfo(); err != nil {
+		log.Fatalf("failed to read NIP-11 information from env: %v", err)
+	}
+
 	host, sport, err := net.SplitHostPort(addr)
 	if err != nil {
 		log.Fatalf("failed to parse address: %v", err)
@@ -251,6 +256,17 @@ func main() {
 		r.DB().SetMaxOpenConns(80)
 		r.DB().SetMaxIdleConns(10)
 		r.DB().SetConnMaxIdleTime(30 * time.Second)
+	}
+
+	paid, err := newPaidWrites(r.DB(), r.serviceURL)
+	if err != nil {
+		log.Fatalf("failed to set up paid writes: %v", err)
+	}
+	if paid != nil {
+		r.paid = paid
+		paid.advertise(&relayInfo)
+		server.Router().HandleFunc("/pay", paid.handlePay)
+		go paid.run(context.Background(), time.Duration(envIntDef("PAID_WRITES_POLL_SECONDS", 5))*time.Second)
 	}
 
 	sub, _ := fs.Sub(assets, "static")
