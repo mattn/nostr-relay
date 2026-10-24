@@ -142,11 +142,16 @@ is rejected with `restricted:` and that URL.
 
 ```
 $ curl 'https://relay.example.com/pay?pubkey=<hex>&amount=1000'
-{"ark_address":"ark1...","balance_msats":0,"fee_msats":1000,"invoice":"lnbc...","pubkey":"<hex>"}
+{"ark_address":"ark1...","balance_msats":0,"bip321":"bitcoin:?ark=ark1...&lightning=lnbc...&amount=0.00001","fee_msats":1000,"invoice":"lnbc...","pubkey":"<hex>"}
 ```
 
 `amount` (sats) asks for a Lightning invoice; without it only the balance and
-the Ark address are returned.
+the Ark address are returned. `bip321` is the payment request as one
+[BIP-321](https://github.com/bitcoin/bips/blob/master/bip-0321.mediawiki) URI,
+with the rails that are on. A client can pass it unchanged to its wallet with
+[NWC-321](https://github.com/nostr-wallet-connect/nwc/blob/main/321.md) `pay`: an
+Ark wallet on the relay's Ark server pays the Ark address, any other wallet pays
+the invoice.
 
 ## Storage backends
 

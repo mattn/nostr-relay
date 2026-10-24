@@ -129,6 +129,17 @@ func TestPaidWritesArkAndLightning(t *testing.T) {
 		t.Fatalf("invoice = %q (with amount), %v (without)", invoice, first["invoice"])
 	}
 
+	// both rails as one BIP-321 URI, for NWC-321 pay
+	if first["bip321"] != "bitcoin:?ark=tark1address1" {
+		t.Fatalf("bip321 without amount = %v", first["bip321"])
+	}
+	if want := "bitcoin:?ark=tark1address1&lightning=" + invoice + "&amount=0.0000001"; again["bip321"] != want {
+		t.Fatalf("bip321 = %v, want %s", again["bip321"], want)
+	}
+	if _, ok := again["amount"]; ok {
+		t.Fatal("amount is internal and must not be returned")
+	}
+
 	mock.mu.Lock()
 	mock.history = []map[string]any{
 		receive(1, "successful", "ark", "tark1address1", 5),
@@ -170,7 +181,7 @@ func TestPaidWritesConfig(t *testing.T) {
 	})
 	pubkey := strings.Repeat("b", 64)
 
-	if res := pay(t, p, "pubkey="+pubkey+"&amount=10"); res["invoice"] != nil || res["ark_address"] == nil {
+	if res := pay(t, p, "pubkey="+pubkey+"&amount=10"); res["invoice"] != nil || res["ark_address"] == nil || res["bip321"] != "bitcoin:?ark="+res["ark_address"].(string) {
 		t.Fatalf("ark only: %v", res)
 	}
 	if ok, _ := p.charge(context.Background(), &nostr.Event{PubKey: pubkey, Kind: 7}); !ok {

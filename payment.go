@@ -178,6 +178,9 @@ func (p *paidWrites) addTarget(ctx context.Context, pubkey, rail, value string) 
 
 // handlePay serves payments_url: GET /pay?pubkey=<hex>[&amount=<sats>] returns
 // the balance, the pubkey's Ark address and, with an amount, a Lightning invoice.
+// "bip321" carries both as one BIP-321 URI that a client can hand unchanged to
+// its wallet (NWC-321 pay): the wallet pays ark= when the address is on its own
+// Ark server, otherwise lightning=. Either one credits the same pubkey.
 func (p *paidWrites) handlePay(w http.ResponseWriter, req *http.Request) {
 	pubkey := req.URL.Query().Get("pubkey")
 	if !nostr.IsValid32ByteHex(pubkey) {
@@ -201,14 +204,40 @@ func (p *paidWrites) handlePay(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		res["invoice"], err = p.invoice(ctx, pubkey, sats)
+		res["amount"] = sats
 	}
 	if err != nil {
 		slog.Error("paid writes: barkd", "error", err)
 		http.Error(w, "wallet unavailable", http.StatusBadGateway)
 		return
 	}
+	if uri := bip321(res); uri != "" {
+		res["bip321"] = uri
+	}
+	delete(res, "amount")
 	w.Header().Set("content-type", "application/json")
 	json.NewEncoder(w).Encode(res)
+}
+
+// bip321 builds bitcoin:?ark=<address>&lightning=<invoice>&amount=<btc> from the
+// /pay result, with the parts it has. BIP-321 uses a bech32m type's HRP as the
+// key, and the key stays "ark" for tark1 addresses. Without an invoice there is
+// no amount: any amount sent to the Ark address is credited.
+func bip321(res map[string]any) string {
+	var params []string
+	if addr, _ := res["ark_address"].(string); addr != "" {
+		params = append(params, "ark="+addr)
+	}
+	if invoice, _ := res["invoice"].(string); invoice != "" {
+		params = append(params, "lightning="+invoice)
+		if sats, _ := res["amount"].(int64); sats > 0 {
+			params = append(params, "amount="+strings.TrimRight(strings.TrimRight(strconv.FormatFloat(float64(sats)/1e8, 'f', 8, 64), "0"), "."))
+		}
+	}
+	if len(params) == 0 {
+		return ""
+	}
+	return "bitcoin:?" + strings.Join(params, "&")
 }
 
 // poll credits the successful receives in the wallet history that went to a
