@@ -160,6 +160,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if err := loadRelayInfo(); err != nil {
+		log.Fatalf("failed to read NIP-11 information from env: %v", err)
+	}
+
 	host, sport, err := net.SplitHostPort(addr)
 	if err != nil {
 		log.Fatalf("failed to parse address: %v", err)
