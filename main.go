@@ -25,7 +25,6 @@ import (
 	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/eventstore/turso"
 	"github.com/fiatjaf/relayer/v2"
-	"github.com/nbd-wtf/go-nostr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -87,17 +86,6 @@ func parseLogLevel(value string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
-}
-
-func skipEventFunc(ev *nostr.Event) bool {
-	now := nostr.Now()
-	for _, ex := range ev.Tags.GetAll([]string{"expiration"}) {
-		v, err := strconv.ParseUint(ex.Value(), 10, 64)
-		if err == nil && nostr.Timestamp(v) <= now {
-			return true
-		}
-	}
-	return false
 }
 
 // MEM_PROFILE_RATE sets runtime.MemProfileRate, the average number of bytes
@@ -236,7 +224,6 @@ func main() {
 	server, err := relayer.NewServer(
 		&r,
 		relayer.WithPerConnectionLimiter(5.0, 1),
-		relayer.WithSkipEventFunc(skipEventFunc),
 		// Every connection arrives through the Cloudflare tunnel, which owns
 		// this header; nothing can reach the relay directly and forge it.
 		relayer.WithTrustedProxyHeader("X-Forwarded-For"),

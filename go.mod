@@ -5,7 +5,7 @@ go 1.26.10
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.5.1
 	github.com/fiatjaf/eventstore v0.17.15
-	github.com/fiatjaf/relayer/v2 v2.3.1
+	github.com/fiatjaf/relayer/v2 v2.3.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nbd-wtf/go-nostr v0.52.3
@@ -23,7 +23,6 @@ require (
 	fiatjaf.com/lib v0.3.7 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
-	github.com/andybalholm/brotli v1.2.7 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/aquasecurity/esquery v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
