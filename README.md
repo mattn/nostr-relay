@@ -90,6 +90,26 @@ NOSTR_RELAY_CONTACT="admin@example.com"
 NOSTR_RELAY_PUBKEY="npub1xxxxx"
 ```
 
+The variables are read once at startup. Limitations use the
+`NOSTR_RELAY_LIMITATION_` prefix and are the values the relay enforces, not just
+the ones it advertises:
+
+```
+NOSTR_RELAY_LIMITATION_MAXCONTENTLENGTH=8192
+NOSTR_RELAY_LIMITATION_CREATEDATLOWERLIMIT=94608000   # seconds into the past (0: no limit)
+NOSTR_RELAY_LIMITATION_CREATEDATUPPERLIMIT=900        # seconds into the future (default 1800)
+```
+
+`default_limit` follows `max_limit`, and `restricted_writes` is set while the
+allowlist is not empty. A relay that charges can advertise its fees and where to
+pay; `NOSTR_RELAY_FEES` takes the NIP-11 `fees` object as JSON:
+
+```
+NOSTR_RELAY_PAYMENTSURL="https://relay.example.com/pay"
+NOSTR_RELAY_LIMITATION_PAYMENTREQUIRED=true
+NOSTR_RELAY_FEES='{"admission":[{"amount":1000000,"unit":"msats"}]}'
+```
+
 ## Storage backends
 
 ### SQLite (default)

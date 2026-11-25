@@ -318,8 +318,11 @@ func (r *Relay) Init() error {
 }
 
 func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string) {
-	if evt.CreatedAt > nostr.Now()+30*60 {
-		return false, ""
+	if !createdAtWithinLimits(evt.CreatedAt, nostr.Now()) {
+		return false, "invalid: created_at is out of the acceptable range"
+	}
+	if max := relayLimitationDocument.MaxEventTags; max > 0 && len(evt.Tags) > max {
+		return false, "invalid: too many tags"
 	}
 
 	if nip70.IsProtected(*evt) {
@@ -381,42 +384,73 @@ func (r *Relay) AcceptReq(ctx context.Context, id string, filters nostr.Filters,
 }
 
 var relayLimitationDocument = &nip11.RelayLimitationDocument{
-	MaxMessageLength: 524288,
-	MaxSubscriptions: 20,    //
-	MaxLimit:         500,   //
-	MaxSubidLength:   100,   //
-	MaxEventTags:     1000,  //
-	MaxContentLength: 16384, //
-	MinPowDifficulty: 0,     // No PoW requirement
-	AuthRequired:     false,
-	PaymentRequired:  false,
+	MaxMessageLength:    512000,  // relayer's websocket read limit
+	MaxSubscriptions:    20,      //
+	MaxLimit:            500,     //
+	MaxSubidLength:      100,     //
+	MaxEventTags:        1000,    //
+	MaxContentLength:    16384,   //
+	MinPowDifficulty:    0,       // No PoW requirement
+	CreatedAtLowerLimit: 0,       // seconds into the past, 0 disables
+	CreatedAtUpperLimit: 30 * 60, // seconds into the future, 0 disables
+	AuthRequired:        false,
+	PaymentRequired:     false,
+}
+
+var relayInfo = nip11.RelayInformationDocument{
+	Name:           "nostr-relay",
+	Description:    "relay powered by the relayer framework",
+	PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
+	Contact:        "mattn.jp@gmail.com",
+	SupportedNIPs:  supportedNIPs,
+	Software:       "https://github.com/mattn/nostr-relay",
+	Icon:           "https://nostr.compile-error.net/logo.png",
+	Version:        version,
+	Limitation:     relayLimitationDocument,
+	RelayCountries: []string{"JP"},
+	Fees:           &nip11.RelayFeesDocument{},
+}
+
+// loadRelayInfo applies the NOSTR_RELAY_* environment variables to the NIP-11
+// document once at startup. The limitation document is shared with
+// AcceptEvent and the storage backends, so the advertised limits and the
+// enforced ones come from the same values, and nothing is written to it once
+// the relay is serving. envconfig cannot decode the fee lists, so
+// NOSTR_RELAY_FEES takes them as JSON, in the NIP-11 shape:
+//
+//	NOSTR_RELAY_FEES='{"admission":[{"amount":1000000,"unit":"msats"}]}'
+func loadRelayInfo() error {
+	if err := envconfig.Process("NOSTR_RELAY", &relayInfo); err != nil {
+		return err
+	}
+	if fees := os.Getenv("NOSTR_RELAY_FEES"); fees != "" {
+		if err := json.Unmarshal([]byte(fees), relayInfo.Fees); err != nil {
+			return fmt.Errorf("NOSTR_RELAY_FEES: %w", err)
+		}
+	}
+	// Filters without a limit are clamped to the backends' QueryLimit.
+	relayLimitationDocument.DefaultLimit = relayLimitationDocument.MaxLimit
+	return nil
+}
+
+// createdAtWithinLimits reports whether created_at falls in the window
+// advertised by created_at_lower_limit and created_at_upper_limit.
+func createdAtWithinLimits(createdAt, now nostr.Timestamp) bool {
+	if lower := relayLimitationDocument.CreatedAtLowerLimit; lower > 0 && createdAt < now-nostr.Timestamp(lower) {
+		return false
+	}
+	if upper := relayLimitationDocument.CreatedAtUpperLimit; upper > 0 && createdAt > now+nostr.Timestamp(upper) {
+		return false
+	}
+	return true
 }
 
 func (r *Relay) GetNIP11InformationDocument() nip11.RelayInformationDocument {
-	info := nip11.RelayInformationDocument{
-		Name:           "nostr-relay",
-		Description:    "relay powered by the relayer framework",
-		PubKey:         "2c7cc62a697ea3a7826521f3fd34f0cb273693cbe5e9310f35449f43622a5cdc",
-		Contact:        "mattn.jp@gmail.com",
-		SupportedNIPs:  supportedNIPs,
-		Software:       "https://github.com/mattn/nostr-relay",
-		Icon:           "https://nostr.compile-error.net/logo.png",
-		Version:        version,
-		Limitation:     relayLimitationDocument,
-		RelayCountries: []string{"JP"},
-		LanguageTags:   []string{},
-		Tags:           []string{},
-		PostingPolicy:  "",
-		PaymentsURL:    "",
-		Fees: &nip11.RelayFeesDocument{
-			Admission: []struct {
-				Amount int    "json:\"amount\""
-				Unit   string "json:\"unit\""
-			}{},
-		},
-	}
-	if err := envconfig.Process("NOSTR_RELAY", &info); err != nil {
-		log.Fatalf("failed to read from env: %v", err)
+	info := relayInfo
+	if len(r.currentLists().allowlist) > 0 {
+		limitation := *relayLimitationDocument
+		limitation.RestrictedWrites = true
+		info.Limitation = &limitation
 	}
 	return info
 }
